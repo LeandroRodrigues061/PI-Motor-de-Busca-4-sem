@@ -6,7 +6,8 @@
 }
 
 @theme  {
-  --color-primary:#3B6790;
+  --color-primary:#3B6090;
+  --color-primary-hover:#00598A;
   --color-secondary:#EFB036;
 
 }
