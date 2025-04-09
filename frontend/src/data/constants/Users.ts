@@ -9,9 +9,9 @@ const users: User[] = [
   },
   {
     id: 2,
-    name: "Carlos Lima",
-    email: "carlos.lima@email.com",
-    password: "123senha"
+    name: "nicky",
+    email: "nicky@email.com",
+    password: "123"
   },
   {
     id: 3,

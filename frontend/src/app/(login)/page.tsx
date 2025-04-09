@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/Button";
 import {
+  IconArrowLeft,
   IconArrowRight,
   IconEye,
   IconEyeClosed,
@@ -10,12 +11,15 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import users from "@/data/constants/Users";
+import { useRouter } from 'next/navigation';
 export default function Login() {
   
+  const router = useRouter();
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-
+  const [isLoading, setIsLoading] = useState(false);
+  
   // Senha vísivel ou invísivel
   const [type, setType] = useState("password");
   const [isEyeOpen, setIsEyeOpen] = useState(false);
@@ -38,28 +42,30 @@ export default function Login() {
     setMode("login");
   };
 
-  // Email verificado
-  const [isEmailCheck, setIsEmailCheck] = useState(false);
-  const emailChecked = () => {
-    const userFound = users.find(user => user.email === email);
+  // Senha e email verificado -> encaminhar para login
+  const handleLogin  = () => {
+    setIsLoading(true);
+    const  userFound =  users.find(user =>user.email === email && user.password === password);
     if (userFound) {
-      setIsEmailCheck(true);
+      router.push("/buscador")
     } else {
-      alert("Email não encontrado no banco de dados");
-    }
-  };
-  // Senha verificada
-  const [ispasswordCheck, setIspasswordCheck] = useState(false);
-  const passwordChecked = () => {
-    const userFound = users.find(user => user.password === password);
-    if (userFound) {
-      setIspasswordCheck(true);
-    } else {
-      alert("password não encontrado no banco de dados");
+      alert("email ou senha incorretos");
+      setIsLoading(false);
     }
   };
 
-  // verificar a mesma senha
+    // Email existente? para liberar campos de nova senha
+    const [isEmailCheck, setIsEmailCheck] = useState(false);
+    const emailChecked = () => {
+      const userFound = users.find(user => user.email === email);
+      if (userFound) {
+        setIsEmailCheck(true);
+      } else {
+        alert("Email não encontrado no banco de dados");
+      }
+    };
+
+  // verificar se na criação da senha é a mesma senha
   const [isSamePassword, setIsSamePassword] = useState(false);
   const checkSamePassword = () => {
     if(password === confirmPassword){
@@ -69,6 +75,9 @@ export default function Login() {
     alert("as senhas não coincidem")
   }
 
+  const back = () => {
+    setMode("login");
+  }
   return (
     <div className="w-full h-screen grid grid-cols-2 bg-white">
       <article className="flex flex-col items-center justify-center pb-40 bg-[url('/img/background-image.png')] bg-no-repeat bg-center">
@@ -91,7 +100,13 @@ export default function Login() {
         </div>
       </article>
 
-      <article className="flex flex-col items-center justify-center  ">
+      <article className="flex flex-col items-center justify-center gap-4 ">     
+      <div className={`${mode === "login" ? "hidden" : "w-full flex items-center justify-start px-10"}`}>
+          <button onClick={back} type="button" className="text-zinc-500 flex items-center gap-2 cursor-pointer">
+            <IconArrowLeft/>
+            <p className="">Voltar</p>
+          </button>
+        </div>
         <form className="w-[500px] flex flex-col items-center justify-center gap-5">
           <div className="w-full justify-center flex flex-col items-center gap-2">
             <h2 className="text-primary text-4xl font-semibold uppercase ">
@@ -153,8 +168,8 @@ export default function Login() {
                   Esqueceu sua senha?
                 </span>
               </div>
-              <Button type="button" variant="primary" size="full">
-                <p className="text-xl font-semibold">Entrar</p>
+              <Button type="button" onClick={handleLogin} variant="primary" size="full">
+                <p className="text-xl font-semibold">{isLoading ? "carregando...":"Entrar"}</p>
                 <IconArrowRight size={24} />
               </Button>
             </>
@@ -236,6 +251,14 @@ export default function Login() {
           )}
         </form>
       </article>
+
+      {
+        isSamePassword ?? (
+          <div>
+
+          </div>
+        )
+      }
     </div>
   );
 }
