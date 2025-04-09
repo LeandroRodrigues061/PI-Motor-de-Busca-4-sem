@@ -8,6 +8,7 @@ import {
   IconLock,
   IconMail,
 } from "@tabler/icons-react";
+
 import Image from "next/image";
 import { useState } from "react";
 import users from "@/data/constants/Users";
@@ -18,7 +19,6 @@ export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false);
   
   // Senha vísivel ou invísivel
   const [type, setType] = useState("password");
@@ -42,39 +42,37 @@ export default function Login() {
     setMode("login");
   };
 
-  // Senha e email verificado -> encaminhar para login
+  // Login
   const handleLogin  = () => {
-    setIsLoading(true);
     const  userFound =  users.find(user =>user.email === email && user.password === password);
-    if (userFound) {
+    if (!userFound) {
+      alert("email ou senha incorretos"); return
+      }
       router.push("/buscador")
-    } else {
-      alert("email ou senha incorretos");
-      setIsLoading(false);
-    }
   };
 
     // Email existente? para liberar campos de nova senha
     const [isEmailCheck, setIsEmailCheck] = useState(false);
     const emailChecked = () => {
       const userFound = users.find(user => user.email === email);
-      if (userFound) {
-        setIsEmailCheck(true);
-      } else {
+      if (!userFound) {
         alert("Email não encontrado no banco de dados");
+        return   
       }
+      setIsEmailCheck(true);
     };
 
-  // verificar se na criação da senha é a mesma senha
-  const [isSamePassword, setIsSamePassword] = useState(false);
-  const checkSamePassword = () => {
-    if(password === confirmPassword){
-      setIsSamePassword(true)
-      alert("abrir modal para voltar pro login, usar shadcn")
+  // mudar senha
+  const [isPasswordChecked, setIsPasswordChecked] = useState(false)
+  const changePassword = () => {
+    if(password !== confirmPassword){
+      alert("As senhas não coincidem, tente novamente!"); return
     }
-    alert("as senhas não coincidem")
+    setIsPasswordChecked(true)
+    // IMPLEMENTAÇÃO DO BACKEND
   }
 
+  // Voltar para login mode
   const back = () => {
     setMode("login");
   }
@@ -89,7 +87,7 @@ export default function Login() {
             width={100}
             height={100}
           />
-          <h1 className="font-semibold text-4xl mt-6">
+          <h1 className="text-white font-semibold text-4xl mt-6">
             {mode === "login"
               ? "Bem-vindo ao nosso buscador de leilões!"
               : "Altere sua senha aqui"}
@@ -100,9 +98,9 @@ export default function Login() {
         </div>
       </article>
 
-      <article className="flex flex-col items-center justify-center gap-4 ">     
+      <article className={`flex flex-col items-center justify-center gap-6 ${mode === "login" ? " ": "pb-40"}`}>     
       <div className={`${mode === "login" ? "hidden" : "w-full flex items-center justify-start px-10"}`}>
-          <button onClick={back} type="button" className="text-zinc-500 flex items-center gap-2 cursor-pointer">
+          <button onClick={back} type="button" className="text-zinc-500 hover:text-zinc-600 flex items-center gap-2 cursor-pointer transition-colors duration-20 pt-10">
             <IconArrowLeft/>
             <p className="">Voltar</p>
           </button>
@@ -126,7 +124,7 @@ export default function Login() {
             <>
               <div className="w-full flex flex-col gap-1">
                 <label className="text-2xl text-primary">E-mail:</label>
-                <div className="w-full flex justify-start items-center gap-1 border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary ">
+                <div className="w-full flex justify-start items-center gap-1 border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary focus-within:shadow-[0_0_4px_1px_#98C6FF] ">
                   <IconMail className="text-zinc-400" />
                   <input
                     type="email"
@@ -141,7 +139,7 @@ export default function Login() {
                 className={`w-full flex flex-col gap-1 transition-opacity duration-300`}
               >
                 <label className="text-2xl text-primary">Senha:</label>
-                <div className="w-full flex justify-between items-center border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary">
+                <div className="w-full flex justify-between items-center border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary focus-within:shadow-[0_0_4px_1px_#98C6FF]">
                   <div className="flex gap-1">
                     <IconLock className="text-zinc-400" />
                     <input
@@ -163,13 +161,13 @@ export default function Login() {
                 </div>
                 <span
                   onClick={forgotPasswordMode}
-                  className="text-sm text-primary cursor-pointer pt-1"
+                  className="text-sm text-primary cursor-pointer pt-1 transition-colors duration-200 hover:text-sky-800"
                 >
                   Esqueceu sua senha?
                 </span>
               </div>
               <Button type="button" onClick={handleLogin} variant="primary" size="full">
-                <p className="text-xl font-semibold">{isLoading ? "carregando...":"Entrar"}</p>
+                <p className="text-xl font-semibold">{"Entrar"}</p>
                 <IconArrowRight size={24} />
               </Button>
             </>
@@ -177,7 +175,7 @@ export default function Login() {
             <>
               <div className="w-full flex flex-col gap-1">
                 <label className="text-2xl text-primary  ">E-mail:</label>
-                <div className="w-full flex justify-start items-center gap-1 border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary ">
+                <div className="w-full flex justify-start items-center gap-1 border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary focus-within:shadow-[0_0_4px_1px_#98C6FF] ">
                   <IconMail className="text-zinc-400" />
                   <input
                     type="email"
@@ -192,7 +190,7 @@ export default function Login() {
                 className={`w-full flex flex-col gap-1 transition-opacity duration-300 ${isEmailCheck === true ? "block" : "hidden"}`}
               >
                 <label className="text-2xl text-primary">Nova senha:</label>
-                <div className="w-full flex justify-between items-center border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary">
+                <div className="w-full flex justify-between items-center border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary focus-within:shadow-[0_0_4px_1px_#98C6FF]">
                   <div className="flex gap-1">
                     <IconLock className="text-zinc-400" />
                     <input
@@ -217,7 +215,7 @@ export default function Login() {
                 className={`w-full flex flex-col gap-1 transition-opacity duration-300 ${isEmailCheck === true ? "block" : "hidden"}`}
               >
                 <label className="text-2xl text-primary">Confirme a senha:</label>
-                <div className="w-full flex justify-between items-center border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary">
+                <div className="w-full flex justify-between items-center border border-zinc-300 text-zinc-400 rounded-lg px-3 py-2 focus-within:border-primary focus-within:shadow-[0_0_4px_1px_#98C6FF]">
                   <div className="flex gap-1">
                     <IconLock className="text-zinc-400" />
                     <input
@@ -243,7 +241,7 @@ export default function Login() {
                 <p className="text-xl font-semibold">Continuar</p>
               </Button>
               :
-              <Button type="button" variant="primary" onClick={checkSamePassword} size="full">
+              <Button type="button" onClick={changePassword} variant="primary" size="full">
                 <p className="text-xl font-semibold">Confirmar</p>
               </Button>
             }
@@ -251,14 +249,6 @@ export default function Login() {
           )}
         </form>
       </article>
-
-      {
-        isSamePassword ?? (
-          <div>
-
-          </div>
-        )
-      }
     </div>
   );
 }
