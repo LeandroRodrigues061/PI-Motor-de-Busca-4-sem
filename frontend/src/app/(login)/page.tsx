@@ -7,6 +7,7 @@ import users from "@/data/constants/Users";
 import { useRouter } from "next/navigation";
 import AuthForm from "@/components/login/AuthForm";
 import ModalForm from "@/components/login/ModalForm";
+import toast, { Toaster } from 'react-hot-toast';
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -29,8 +30,7 @@ export default function Login() {
       (user) => user.email === email && user.password === password
     );
     if (!userFound) {
-      alert("email ou senha incorretos");
-      return;
+      return toast.error('Email ou senha incorretos!');
     }
     router.push("/buscador");
   };
@@ -41,8 +41,7 @@ export default function Login() {
   const emailChecked = () => {
     const userFound = users.find((user) => user.email === email);
     if (!userFound) {
-      alert("Email não encontrado no banco de dados");
-      return;
+      return toast.error('Email não encontrado no banco de dados!');
     }
     setIsEmailCheck(true);
   };
@@ -52,8 +51,7 @@ export default function Login() {
 
   const changePassword = () => {
     if (password !== confirmPassword) {
-      alert("As senhas não coincidem, tente novamente!");
-      return;
+      return toast.error('As senhas não coincidem, tente novamente!');
     }
     setIsPasswordChecked(true);
     // IMPLEMENTAÇÃO DO BACKEND
@@ -69,7 +67,8 @@ export default function Login() {
   };
   return (
     <>
-      <div className="w-full h-screen grid grid-cols-2 bg-white">
+      <Toaster position="top-right" reverseOrder={false} />
+      <div   className="w-full h-screen grid grid-cols-2 bg-white">
         <article className="flex flex-col items-center justify-center pb-40 bg-[url('/img/background-image.png')] bg-no-repeat bg-center">
           <div className="flex flex-col justify-center items-center w-[500px] text-center">
             <Image
