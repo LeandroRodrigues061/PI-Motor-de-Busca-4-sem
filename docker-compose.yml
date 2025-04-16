@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  next-app:
+    build: ./next-app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - flask-api
+    environment:
+      - FLASK_API_URL=http://flask-api:5000
+
+  flask-api:
+    build: ./python-api
+    ports:
+      - "5000:5000"
