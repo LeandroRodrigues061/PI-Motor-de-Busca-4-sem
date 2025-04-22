@@ -1,4 +1,3 @@
-from requests import options
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -38,7 +37,13 @@ def extrair_imoveis_da_pagina(driver):
     return imoveis
 
 def extrair_imoveis_selenium():
-    driver = webdriver.Chrome()
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    
+    driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
 
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
@@ -85,7 +90,7 @@ def extrair_imoveis_selenium():
 
             if proximo_link:
                 driver.execute_script("arguments[0].click();", proximo_link)
-                time.sleep(10)
+                time.sleep(8)
                 wait.until(EC.presence_of_element_located((By.ID, "listaimoveispaginacao")))
             else:
                 break 

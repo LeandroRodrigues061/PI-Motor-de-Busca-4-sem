@@ -5,8 +5,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 import csv
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options
 
-driver = webdriver.Edge()
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--disable-gpu')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+
+driver = webdriver.Chrome(options=options)
 driver.get("https://vitrinebradesco.com.br/auctions?type=realstate")
 
 wait = WebDriverWait(driver, 10)

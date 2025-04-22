@@ -3,8 +3,8 @@ import subprocess
 scripts = [
     'Scraping_Itau.py',
     'Scraping.py',
-    'testeautomacaoCaixa',
-    'testeautomacaoSantander'
+    'testeautomacaoCaixa.py',
+    'testeautomacaoSantander.py'
 ]
 
 for script in scripts:
