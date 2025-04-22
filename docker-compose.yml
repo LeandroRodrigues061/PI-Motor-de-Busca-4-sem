@@ -10,7 +10,8 @@ services:
     environment:
       - FLASK_API_URL=http://flask-api:5000
 
-  flask-api:
-    build: ./python-api
-    ports:
-      - "5000:5000"
+  scrapers:
+    build: ./python
+    container_name: scrapers
+    volumes:
+      - ./python:/app
