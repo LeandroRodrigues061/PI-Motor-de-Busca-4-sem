@@ -44,9 +44,9 @@ export default function Sidebar({onBuscar} :sideBarProps) {
 
   return (
     <aside className="w-96 h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
-      <h1 className="text-zinc-500 font-semibold">
+      <h2 className="text-zinc-500 font-semibold">
         Selecione as opções e facilite a sua busca
-      </h1>
+      </h2>
       <div className="flex flex-col gap-6">
         {/* Estado */}
         <div className="flex flex-col gap-2">
