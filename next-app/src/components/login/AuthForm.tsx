@@ -85,6 +85,8 @@ export default function AuthForm(props: authFormProps) {
             title="Senha"
             mode={mode}
             forgotPasswordMode={forgotPasswordMode}
+            setEmail={setEmail}
+            setPassword={setPassword}
           >
             <div className="flex flex-1 gap-1">
               <IconLock className="text-zinc-400" />
@@ -193,7 +195,7 @@ export default function AuthForm(props: authFormProps) {
           ) : (
             <Button
               type="button"
-              onClick={changePassword}
+              onClick={() => {changePassword(), setEmail(""), setPassword(""), setConfirmPassword("")}}
               variant="primary"
               size="full"
             >
