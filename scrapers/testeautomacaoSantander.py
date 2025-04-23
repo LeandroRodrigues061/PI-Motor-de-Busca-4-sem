@@ -3,7 +3,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
 import csv
@@ -71,14 +70,8 @@ def extrair_dados_imoveis(html):
 
     return imoveis
 
-def extrair_imoveis_com_paginacao():
-    options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    
-    driver = webdriver.Chrome(options=options)
+def extrair_imoveis_com_paginacao():   
+    driver = webdriver.Chrome()
     wait = WebDriverWait(driver, 20)
 
     driver.get('https://www.santanderimoveis.com.br/?txtsearch=S%C3%A3o+Paulo&cidade=S%C3%A3o+Paulo')

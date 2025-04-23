@@ -3,7 +3,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
-from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
 import csv
@@ -36,12 +35,7 @@ def extrair_imoveis_da_pagina(driver):
     return imoveis
 
 def extrair_imoveis_selenium():
-    # options = Options()
-    # options.add_argument('--headless')
-    # options.add_argument('--disable-gpu')
-    # options.add_argument('--no-sandbox')
-    # options.add_argument('--disable-dev-shm-usage')
-    
+   
     driver = webdriver.Chrome()
     wait = WebDriverWait(driver, 20)
 

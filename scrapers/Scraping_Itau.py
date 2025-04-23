@@ -2,7 +2,7 @@ from selenium import webdriver
 from time import sleep
 import csv
 
-driver = webdriver.Edge()
+driver = webdriver.Chrome()
 driver.get("https://www.itau.com.br/imoveis-itau?leilao=true&estado=S%C3%83O+PAULO&cidade=S%C3%83O+PAULO")
 sleep(5)
 
