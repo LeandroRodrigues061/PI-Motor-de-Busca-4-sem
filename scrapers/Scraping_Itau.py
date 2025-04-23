@@ -34,7 +34,7 @@ for card in cards:
     dados.append({"imagem": imagem, "endereco": endereco})
 
 # Salvar em CSV
-with open("imoveis.csv", "w", newline="", encoding="utf-8") as arquivo_csv:
+with open("imoveis4.csv", "w", newline="", encoding="utf-8") as arquivo_csv:
     writer = csv.DictWriter(arquivo_csv, fieldnames=["imagem", "endereco"])
     writer.writeheader()
     for dado in dados:

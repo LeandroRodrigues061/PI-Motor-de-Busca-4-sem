@@ -126,7 +126,7 @@ def extrair_imoveis_com_paginacao():
     driver.quit()
     return todos_os_imoveis
 
-def salvar_em_csv(lista_de_dados, nome_arquivo='imoveis.csv'):
+def salvar_em_csv(lista_de_dados, nome_arquivo='imoveis1.csv'):
     if not lista_de_dados:
         print("Nenhum dado para salvar.")
         return

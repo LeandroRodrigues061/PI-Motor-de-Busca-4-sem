@@ -61,7 +61,7 @@ def extrair_dados():
     return dados
 
 
-with open("imoveis.csv", "w", newline="", encoding="utf-8") as arquivo_csv:
+with open("imoveis3.csv", "w", newline="", encoding="utf-8") as arquivo_csv:
     writer = csv.DictWriter(arquivo_csv, fieldnames=["imagem", "descricao", "valor"])
     writer.writeheader()
     for dado in extrair_dados():

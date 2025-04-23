@@ -1,5 +1,4 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -37,13 +36,13 @@ def extrair_imoveis_da_pagina(driver):
     return imoveis
 
 def extrair_imoveis_selenium():
-    options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
+    # options = Options()
+    # options.add_argument('--headless')
+    # options.add_argument('--disable-gpu')
+    # options.add_argument('--no-sandbox')
+    # options.add_argument('--disable-dev-shm-usage')
     
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome()
     wait = WebDriverWait(driver, 20)
 
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
@@ -102,7 +101,7 @@ def extrair_imoveis_selenium():
     driver.quit()
     return todos_os_imoveis
 
-def salvar_em_csv(imoveis, nome_arquivo = 'imoveis.csv'):
+def salvar_em_csv(imoveis, nome_arquivo = 'imoveis2.csv'):
     if not imoveis:
         print("Nenhum imóvel encontrado.")
         return
