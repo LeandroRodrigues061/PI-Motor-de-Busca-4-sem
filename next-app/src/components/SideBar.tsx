@@ -18,7 +18,7 @@ interface Cidade {
   bairros: string[];
 }
 
-export default function Sidebar({onBuscar} :sideBarProps) {
+export default function Sidebar({ onBuscar} :sideBarProps) {
   const [estadoSelecionado, setEstadoSelecionado] = useState<Estado | null>(
     null
   );
@@ -135,7 +135,7 @@ export default function Sidebar({onBuscar} :sideBarProps) {
         <label className="font-semibold text-xl text-zinc-6  00">Faixa de valor:</label>
         <select
           value={tipoImovel}
-          onChange={(e) => setTipoImovel(e.target.value)}
+          onChange={(e) => setValor(e.target.value)}
           disabled={!estadoSelecionado}
           className={`border rounded-xl p-2 text-zinc-600" ${!estadoSelecionado ? "cursor-no-drop " : ""}`}
         >

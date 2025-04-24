@@ -15,7 +15,7 @@ export default function Template(props: templateProps) {
   const [imoveisFiltrados, setImoveisFiltrados] = useState<Imovel[]>([]);
 
   const handleBuscar = (filtros: {
-    estado: any;
+    estado: string;
     cidade: string | null;
     bairros: string[];
     tipoImovel: string;

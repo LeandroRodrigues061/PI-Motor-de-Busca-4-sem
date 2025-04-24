@@ -1,5 +1,3 @@
-
-import { Button } from "@/components/Button";
 import Template from "@/components/layout/Template";
 
 export default function Buscador(){
