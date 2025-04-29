@@ -1,9 +1,6 @@
 'use client'
-import { Button } from "@/components/Button";
 import Template from "@/components/layout/Template";
 import { useState } from "react";
-import Image from "next/image";
-import { IconArrowDown, IconArrowUp, IconClock, IconHeart } from "@tabler/icons-react";
 import { Imovel } from "@/data/models/Imovel";
 
 interface buscadorProps {

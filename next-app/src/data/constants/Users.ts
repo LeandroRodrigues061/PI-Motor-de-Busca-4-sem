@@ -1,6 +1,6 @@
 import User from "../models/User";
 
-const users: User[] = [
+const users: typeof User[] = [
   {
     id: 1,
     name: "Ana Souza",

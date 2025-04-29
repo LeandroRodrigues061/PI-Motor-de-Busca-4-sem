@@ -38,7 +38,7 @@ export default function Template(props: templateProps) {
     setIsFavorite(!isFavorite)
   }
   const handleBuscar = (filtros: {
-    estado: any;
+    estado: string;
     cidade: string | null;
     bairros: string[];
     tipoImovel: string;

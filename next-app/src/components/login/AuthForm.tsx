@@ -195,7 +195,11 @@ export default function AuthForm(props: authFormProps) {
           ) : (
             <Button
               type="button"
-              onClick={() => {changePassword(), setEmail(""), setPassword(""), setConfirmPassword("")}}
+              onClick={() => {changePassword();
+                              setEmail("");
+                              setPassword("");
+                              setConfirmPassword("");
+                }}
               variant="primary"
               size="full"
             >
