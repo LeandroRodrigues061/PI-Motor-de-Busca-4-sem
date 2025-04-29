@@ -1,10 +1,6 @@
 import mongoose, { Mongoose } from 'mongoose';
 
-const MONGO_URI = process.env.MONGO_URI;
-
-if (!MONGO_URI) {
-  throw new Error('⚠️ MONGO_URI não está definido no .env');
-}
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017';
 
 // Define uma interface para o cache
 interface MongooseCache {
@@ -14,25 +10,24 @@ interface MongooseCache {
 
 // Extende o tipo do globalThis
 declare global {
-  // Isso evita conflitos no hot reload do Next.js
   var mongooseCache: MongooseCache | undefined;
 }
 
 // Usa o cache global para conexões persistentes
-let cached: MongooseCache = globalThis.mongooseCache || {
+const cached: MongooseCache = global.mongooseCache || {
   conn: null,
   promise: null,
 };
 
-globalThis.mongooseCache = cached;
+global.mongooseCache = cached;
 
 export async function dbConnect(): Promise<Mongoose> {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGO_URI!, {
+    cached.promise = mongoose.connect(MONGO_URI, {
       dbName: 'MotorDeBusca',
-    });
+    }).then((mongoose) => mongoose);
   }
 
   cached.conn = await cached.promise;
