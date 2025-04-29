@@ -1,17 +1,34 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from time import sleep
 import csv
+import tempfile
+from pymongo import MongoClient
 
-driver = webdriver.Chrome()
+# Configurações do Chrome para Docker + Headless
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--disable-gpu')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('--window-size=1920,1080')
+options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
+
+# Iniciar o driver com opções
+driver = webdriver.Chrome(options=options)
+
+# Acessar o site
 driver.get("https://www.itau.com.br/imoveis-itau?leilao=true&estado=S%C3%83O+PAULO&cidade=S%C3%83O+PAULO")
-sleep(5)
+sleep(5)  # Você pode trocar por WebDriverWait depois se quiser mais robustez
 
-# Acessa os cards via shadowRoot
+# Extrair dados dos cards dentro do Shadow DOM
 cards = driver.execute_script("""
     const appRoot = document.querySelector("app-leiloes-list");
+    if (!appRoot) return [];
     const shadow = appRoot.shadowRoot;
+    if (!shadow) return [];
     const container = shadow.querySelector(".itau-leiloes-pagination-cards");
-    return Array.from(container.querySelectorAll(".itau-leiloes-card"));
+    return Array.from(container ? container.querySelectorAll(".itau-leiloes-card") : []);
 """)
 
 dados = []

@@ -3,14 +3,21 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
-import csv
+import tempfile
+from pymongo import MongoClient
+
+client = MongoClient("mongodb://mongo:27017/")
+db = client["MotorDeBusca"]
 
 def extrair_imoveis_da_pagina(driver):
     soup = BeautifulSoup(driver.page_source, "html.parser")
     lista_div = soup.find("div", id="listaimoveispaginacao")
-    imoveis_divs = lista_div.find_all("div", class_="dadosimovel-col2")  # Ajustar conforme necessário
+    if not lista_div:
+        return []
+    imoveis_divs = lista_div.find_all("div", class_="dadosimovel-col2")
 
     imoveis = []
     for div in imoveis_divs:
@@ -35,8 +42,19 @@ def extrair_imoveis_da_pagina(driver):
     return imoveis
 
 def extrair_imoveis_selenium():
-   
-    driver = webdriver.Chrome()
+    # Headless seguro com diretório temporário
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument('--disable-http2')
+    options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
+
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
+    driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
 
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
@@ -56,7 +74,6 @@ def extrair_imoveis_selenium():
     wait.until(EC.element_to_be_clickable((By.ID, "btn_next1"))).click()
     time.sleep(4)
 
-    # Espera os imóveis carregarem
     wait.until(EC.presence_of_element_located((By.ID, "listaimoveispaginacao")))
 
     todos_os_imoveis = []
@@ -66,9 +83,7 @@ def extrair_imoveis_selenium():
         todos_os_imoveis.extend(imoveis)
         print(f"Página carregada - {len(imoveis)} imóveis encontrados. Total acumulado: {len(todos_os_imoveis)}")
 
-        # Tenta clicar em "Próxima"
         try:
-            # Procura a div de paginação e pega os links válidos
             paginacao = driver.find_element(By.ID, "paginacao")
             links = paginacao.find_elements(By.TAG_NAME, "a")
 
@@ -77,7 +92,7 @@ def extrair_imoveis_selenium():
                 href = link.get_attribute("href")
                 if href and "carregaListaImoveis" in href:
                     pagina = int(href.split("carregaListaImoveis(")[1].split(")")[0])
-                    if pagina > len(todos_os_imoveis) // len(imoveis):  # só avança se for próxima
+                    if pagina > len(todos_os_imoveis) // len(imoveis):
                         proximo_link = link
                         break
 
@@ -86,8 +101,8 @@ def extrair_imoveis_selenium():
                 time.sleep(8)
                 wait.until(EC.presence_of_element_located((By.ID, "listaimoveispaginacao")))
             else:
-                break 
-            
+                break
+
         except Exception as e:
             print("Erro ou última página:", e)
             break
@@ -95,17 +110,13 @@ def extrair_imoveis_selenium():
     driver.quit()
     return todos_os_imoveis
 
-def salvar_em_csv(imoveis, nome_arquivo = 'imoveis2.csv'):
+def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
-        print("Nenhum imóvel encontrado.")
+        print("Nenhum dado para salvar no MongoDB.")
         return
-    chaves = imoveis[0].keys()
-    with open(nome_arquivo, 'w', newline='', encoding='utf-8') as arquivo_csv:
-        writer = csv.DictWriter(arquivo_csv, fieldnames=chaves)
-        writer.writeheader()
-        for imovel in imoveis:
-            writer.writerow(imovel)
-
+    collection = db[nome_collection]
+    collection.insert_many(imoveis)
+    print(f"{len(imoveis)} documentos inseridos na collection '{nome_collection}'.")
 
 
 if __name__ == "__main__":
@@ -115,5 +126,5 @@ if __name__ == "__main__":
         for k, v in imovel.items():
             print(f"{k.capitalize()}: {v}")
         print("-" * 40)
-        
-    salvar_em_csv(dados)
+
+    salvar_em_mongodb(dados, "imoveis_caixa")

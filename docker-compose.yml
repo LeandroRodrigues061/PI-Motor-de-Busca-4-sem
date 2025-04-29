@@ -3,9 +3,19 @@ services:
     build: ./next-app
     ports:
       - "3000:3000"
+  
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
 
   scrapers:
     build: ./scrapers
     container_name: scrapers
     volumes:
       - ./scrapers:/app
+
+volumes:
+  mongo-data:

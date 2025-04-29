@@ -3,9 +3,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
 import csv
+import tempfile
+
+from pymongo import MongoClient
+
+client = MongoClient("mongodb://mongo:27017/")
+db = client["MotorDeBusca"]
 
 def extrair_dados_imoveis(html):
     soup = BeautifulSoup(html, 'html.parser')
@@ -70,8 +77,20 @@ def extrair_dados_imoveis(html):
 
     return imoveis
 
-def extrair_imoveis_com_paginacao():   
-    driver = webdriver.Chrome()
+def extrair_imoveis_com_paginacao():
+    # Headless configurado corretamente
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument('--disable-http2')
+    options.add_argument(f'--user-data-dir={tempfile.mkdtemp()}')
+    
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
+    driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
 
     driver.get('https://www.santanderimoveis.com.br/?txtsearch=S%C3%A3o+Paulo&cidade=S%C3%A3o+Paulo')
@@ -87,7 +106,6 @@ def extrair_imoveis_com_paginacao():
         todos_os_imoveis.extend(imoveis)
 
         try:
-            # Encontra o botão da página ativa
             paginacao = driver.find_element(By.CSS_SELECTOR, 'section.content-pagination ul')
             paginas = paginacao.find_elements(By.TAG_NAME, 'li')
 
@@ -119,24 +137,15 @@ def extrair_imoveis_com_paginacao():
     driver.quit()
     return todos_os_imoveis
 
-def salvar_em_csv(lista_de_dados, nome_arquivo='imoveis1.csv'):
-    if not lista_de_dados:
-        print("Nenhum dado para salvar.")
+def salvar_em_mongodb(imoveis, nome_collection):
+    if not imoveis:
+        print("Nenhum dado para salvar no MongoDB.")
         return
-
-    # Garante que todos os campos sejam incluídos
-    fieldnames = set()
-    for item in lista_de_dados:
-        fieldnames.update(item.keys())
-    fieldnames = sorted(fieldnames)  # opcional: ordena os campos no CSV
-
-    with open(nome_arquivo, mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(lista_de_dados)
-    print(f"Arquivo salvo com sucesso: {nome_arquivo}")
+    collection = db[nome_collection]
+    collection.insert_many(imoveis)
+    print(f"{len(imoveis)} documentos inseridos na collection '{nome_collection}'.")
 
 if __name__ == "__main__":
     dados = extrair_imoveis_com_paginacao()
     print(f"\nTotal de imóveis extraídos: {len(dados)}")
-    salvar_em_csv(dados)
+    salvar_em_mongodb(dados, "imoveis_santander")
