@@ -147,15 +147,9 @@ export default function Sidebar({onBuscar} :sideBarProps) {
         </select>
       </div>
 
-        {/* Resultado */}
-        <div className="my-4 p-2 bg-gray-100 rounded">
-          <strong>Filtro aplicado:</strong>
-          <div>Estado: {estadoSelecionado?.name || "Nenhum"}</div>
-          <div>Cidade: {cidadeSelecionada || "Nenhuma"}</div>
-          <div>Bairros: {bairrosSelecionados.join(", ") || "Nenhum"}</div>
-        </div>
       </div>
       <span className="w-full h-[0.5px] rounded-2xl bg-zinc-300"></span>
+      
       <Button variant="primary" size="full" onClick={() =>
         onBuscar({
           estado: estadoSelecionado,
@@ -165,8 +159,6 @@ export default function Sidebar({onBuscar} :sideBarProps) {
           valor
         })
       }>
-
-        
         <p className="font-semibold">Buscar</p>
       </Button>
     </aside>

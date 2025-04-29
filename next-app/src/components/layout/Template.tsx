@@ -80,7 +80,7 @@ export default function Template(props: templateProps) {
         }`}
       >
         <SideBar onBuscar={handleBuscar} />
-        <div className="flex flex-col p-8 gap-4">
+        <div className="main flex flex-col p-8 gap-4">
           <div className="flex gap-1 items-center">
             <div className="w-1 h-6 bg-primary"/>
             <h1 className="text-3xl font-semibold text-zinc-900">Buscador</h1>
