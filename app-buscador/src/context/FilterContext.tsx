@@ -29,6 +29,7 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
     valor: "",
   });
 
+  
   const filtrarImoveis = (): Imovel[] => {
     return imoveis.filter((imovel) => {
       // Filtro por estado
@@ -46,7 +47,7 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Filtro por tipo de imóvel (se diferente de "indiferente")
+      // Filtro por tipo de imóvel (se diferente de "indiferente") e diferente do selecionado, decarte tudo
       if (
         filtros.tipoImovel.toLowerCase() !== "indiferente" &&
         imovel.tipoImovel.toLowerCase() !== filtros.tipoImovel.toLowerCase()
@@ -54,11 +55,21 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Filtro por valor máximo (se definido)
+      // Filtro por faixa de valor
       if (filtros.valor) {
-        const valorMaximo = Number(filtros.valor);
-        if (!isNaN(valorMaximo) && imovel.valorAvaliacao > valorMaximo) {
-          return false;
+        const valorStr = filtros.valor;
+
+        if (valorStr.startsWith("<")) {
+          const limite = Number(valorStr.replace("<", ""));
+          if (imovel.valorAvaliacao >= limite) return false;
+
+        } else if (valorStr.startsWith(">")) {
+          const limite = Number(valorStr.replace(">", ""));
+          if (imovel.valorAvaliacao <= limite) return false;
+
+        } else if (valorStr.includes("-")) {
+          const [min, max] = valorStr.split("-").map(Number);
+          if (imovel.valorAvaliacao < min || imovel.valorAvaliacao > max) return false;
         }
       }
 

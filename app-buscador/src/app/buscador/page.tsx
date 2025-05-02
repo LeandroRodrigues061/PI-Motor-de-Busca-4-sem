@@ -10,6 +10,10 @@ import { useFiltro } from "@/context/FilterContext";
 
 export default function Buscador(){
 
+  /* Este contexto esta sendo usado para renderizar os elementos com base nas contants
+     Como imoveisFiltrados sera substituidos pela lógica do backend com imoveis JA FILTRADOS pelo mongo
+     so substituir no componente <Imovel>
+  */
   const { filtrarImoveis } = useFiltro();
   const imoveisFiltrados = filtrarImoveis(); // Variavel que guarda os valores de objetos filtrados
 

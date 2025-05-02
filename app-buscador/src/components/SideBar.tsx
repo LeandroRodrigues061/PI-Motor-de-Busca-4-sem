@@ -154,7 +154,7 @@ export default function Sidebar() {
               !estadoSelecionado ? "cursor-no-drop " : ""
             }`}
           >
-            <option value=">100000">Até R$ 100.000,00</option>
+            <option value="<100000">Até R$ 100.000,00</option>
             <option value="100001-200000">
               R$ 100.000,01 - R$ 200.000,00{" "}
             </option>
