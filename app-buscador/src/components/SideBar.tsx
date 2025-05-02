@@ -4,7 +4,8 @@ import { useState } from "react";
 import estados from "@/data/constants/Estados";
 import Estado from "@/data/models/Estado";
 import { Button } from "./Button";
-
+import Banco from "@/data/models/Banco";
+import bancos from "@/data/constants/Bancos"
 interface Cidade {
   nome: string;
   bairros: string[];
@@ -20,6 +21,7 @@ export default function Sidebar() {
       bairros: bairrosSelecionados,
       tipoImovel,
       valor,
+      banco: bancosSelecionados
     });
   };
 
@@ -32,6 +34,7 @@ export default function Sidebar() {
   const [bairrosSelecionados, setBairrosSelecionados] = useState<string[]>([]);
   const [tipoImovel, setTipoImovel] = useState<string>("indiferente");
   const [valor, setValor] = useState<string>("");
+  const [bancosSelecionados, setBancosSelecionados] = useState<string[]>([])
   const cidadesDisponiveis: Cidade[] = estadoSelecionado?.cidade || [];
 
   const bairrosDisponiveis: string[] =
@@ -46,6 +49,7 @@ export default function Sidebar() {
     );
   };
 
+  
   return (
     <aside className="w-96 h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
       <h2 className="text-zinc-500 font-semibold">
@@ -168,6 +172,19 @@ export default function Sidebar() {
           </select>
         </div>
       </div>
+      <div className="flex flex-col gap-2">
+        <h2 className="text-xl font-semibold text-zinc-900">Bancos</h2>
+      
+          {bancos.map((banco) => (
+            <label key={banco.id}>
+              <input type="checkbox" value={banco.name}>
+                {banco.name}
+              </input>
+            </label>
+          ))}
+        
+      </div>
+
       <span className="w-full h-[0.5px] rounded-2xl bg-zinc-300"></span>
 
       <Button
@@ -180,6 +197,7 @@ export default function Sidebar() {
             bairros: bairrosSelecionados,
             tipoImovel,
             valor,
+            banco: bancosSelecionados
           });
           mostrarFiltro();
         }}

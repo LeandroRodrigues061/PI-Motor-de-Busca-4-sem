@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 import { Button } from "@/components/Button";
 import Template from "@/components/layout/Template";
 import { useState } from "react";

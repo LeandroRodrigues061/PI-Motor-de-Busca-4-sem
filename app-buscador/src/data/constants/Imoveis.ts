@@ -14,7 +14,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "São Paulo",
     bairro: "Vila Mariana", 
-    banco: "Itau"
+    banco: "itau"
   },
   {
     id: "12",
@@ -29,7 +29,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "Osasco", 
     bairro: "Centro", 
-    banco: "Itau"
+    banco: "itau"
   },
   {
     id: "13",
@@ -44,7 +44,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "São Paulo",
     bairro: "Mooca",
-    banco: "Itau"
+    banco: "itau"
   },
   {
     id: "14",
@@ -59,7 +59,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "São Paulo",
     bairro: "Tatuapé", 
-    banco: "Bradesco"
+    banco: "bradesco"
   },
   {
     id: "15",
@@ -74,7 +74,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "Ribeirão Preto", 
     bairro: "Jardim Paulista",
-    banco: "Bradesco"
+    banco: "bradesco"
   },
   {
     id: "16",
@@ -89,7 +89,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "São Paulo",
     bairro: "Liberdade", 
-    banco: "Santender"
+    banco: "santender"
   },
   {
     id: "17",
@@ -104,7 +104,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "São Paulo",
     bairro: "Pinheiros", 
-    banco: "Santender"
+    banco: "santender"
   },
   {
     id: "18",
@@ -119,7 +119,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "São Paulo",
     bairro: "Tatuapé", 
-    banco: "Caixa"
+    banco: "caixa"
   },
   {
     id: "19",
@@ -134,7 +134,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "Santos", 
     bairro: "Embaré", 
-    banco: "Caixa"
+    banco: "caixa"
   },
   {
     id: "20",
@@ -149,6 +149,6 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "Campinas", 
     bairro: "Taquaral", 
-    banco: "Caixa"
+    banco: "caixa"
   }
 ];

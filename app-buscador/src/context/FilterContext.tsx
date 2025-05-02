@@ -9,6 +9,8 @@ interface Filtros {
   bairros: string[];
   tipoImovel: string;
   valor: string;
+  banco: string[];
+   
 }
 
 // aqui ficam as funções e variaveis exportadas do contexto
@@ -27,6 +29,7 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
     bairros: [],
     tipoImovel: "indiferente",
     valor: "",
+    banco: []
   });
 
   
@@ -72,6 +75,8 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
           if (imovel.valorAvaliacao < min || imovel.valorAvaliacao > max) return false;
         }
       }
+
+      //ACRESCENTAR O FILTRO PELO BANCO
 
       return true;
     });
