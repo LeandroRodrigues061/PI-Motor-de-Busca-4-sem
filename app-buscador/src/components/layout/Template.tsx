@@ -36,10 +36,10 @@ export default function Template(props: templateProps) {
   // }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col overflow-x-hidden h-full">
       <Header />
       <main
-        className={`w-full flex items-start justify-start gap-4 ${
+        className={`w-full flex items-start justify-start gap-4 h-full ${
           props.className ?? ``
         }`}
       >

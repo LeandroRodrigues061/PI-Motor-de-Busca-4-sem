@@ -13,17 +13,6 @@ interface Cidade {
 
 export default function Sidebar() {
   const { filtros, setFiltros } = useFiltro();
-  const mostrarFiltro = () => {
-    console.log("Filtros atuais:");
-    console.log({
-      estado: estadoSelecionado,
-      cidade: cidadeSelecionada,
-      bairros: bairrosSelecionados,
-      tipoImovel,
-      valor,
-      banco: bancosSelecionados
-    });
-  };
 
   const [estadoSelecionado, setEstadoSelecionado] = useState<Estado | null>(
     null
@@ -51,7 +40,7 @@ export default function Sidebar() {
 
   
   return (
-    <aside className="w-96 h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
+    <aside className="w-96 min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
       <h2 className="text-zinc-500 font-semibold">
         Selecione as opções e facilite a sua busca
       </h2>
@@ -127,9 +116,9 @@ export default function Sidebar() {
         )}
 
         {/* Tipo de Imóvel */}
-        <div className="flex justify-between ">
+        <div className="flex flex-col gap-2 justify-between ">
           <label className="font-semibold text-xl text-zinc-900">
-            Tipo de imóvel:
+            Tipo de imóvel
           </label>
           <select
             value={tipoImovel}
@@ -147,17 +136,18 @@ export default function Sidebar() {
         </div>
         {/* faixa de valor */}
         <div className="flex flex-col gap-2">
-          <label className="font-semibold text-xl text-zinc-6  00">
-            Faixa de valor:
+          <label className="font-semibold text-xl text-zinc-900">
+            Faixa de valor
           </label>
           <select
             value={valor}
             onChange={(e) => setValor(e.target.value)}
             disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600 ${
+            className={`border rounded-xl p-2 text-zinc-600 text-sm ${
               !estadoSelecionado ? "cursor-no-drop " : ""
             }`}
           >
+            <option className="text-xl" value="">Não especificado</option>
             <option value="<100000">Até R$ 100.000,00</option>
             <option value="100001-200000">
               R$ 100.000,01 - R$ 200.000,00{" "}
@@ -176,16 +166,27 @@ export default function Sidebar() {
         <h2 className="text-xl font-semibold text-zinc-900">Bancos</h2>
       
           {bancos.map((banco) => (
-            <label key={banco.id}>
-              <input type="checkbox" value={banco.name}>
-                {banco.name}
-              </input>
+            <label key={banco.id} className="flex gap-2">
+              <input 
+                type="checkbox" 
+                value={banco.name}
+                disabled={!estadoSelecionado}
+                checked={bancosSelecionados.includes(banco.name)}
+                onChange={() => {
+                  setBancosSelecionados((prev) =>
+                    prev.includes(banco.name)
+                      ? prev.filter((nome) => nome !== banco.name)
+                      : [...prev, banco.name]
+                  );
+                }}
+              />
+              {banco.name.charAt(0).toUpperCase() + banco.name.slice(1)}
             </label>
           ))}
         
       </div>
 
-      <span className="w-full h-[0.5px] rounded-2xl bg-zinc-300"></span>
+      <span className="w-full h-[0.5px] mt-6 mb-2 rounded-2xl bg-zinc-300"></span>
 
       <Button
         variant="primary"
@@ -199,7 +200,6 @@ export default function Sidebar() {
             valor,
             banco: bancosSelecionados
           });
-          mostrarFiltro();
         }}
       >
         <p className="font-semibold">Buscar</p>

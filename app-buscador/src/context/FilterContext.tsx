@@ -76,8 +76,10 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
-      //ACRESCENTAR O FILTRO PELO BANCO
-
+      //Filtro de banco
+       if (filtros.banco.length > 0 && !filtros.banco.includes(imovel.banco)) {
+        return false;
+      }
       return true;
     });
   };

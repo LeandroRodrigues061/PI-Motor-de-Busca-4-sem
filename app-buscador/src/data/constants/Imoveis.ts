@@ -89,7 +89,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "São Paulo",
     bairro: "Liberdade", 
-    banco: "santender"
+    banco: "santander"
   },
   {
     id: "17",
@@ -104,7 +104,7 @@ export const imoveis: Imovel[] = [
     estado: "SP",
     cidade: "São Paulo",
     bairro: "Pinheiros", 
-    banco: "santender"
+    banco: "santander"
   },
   {
     id: "18",
