@@ -80,11 +80,11 @@ export default function ImovelCard(props: imovelProps) {
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor de avaliação:</p>
-        <p className="text-zinc-800 font-semibold">{imovel.valorAvaliacao}</p>
+        <p className="text-zinc-800 font-semibold">R$ {imovel.valorAvaliacao.toLocaleString('pt-BR')}</p>
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor mínimo de venda:</p>
-        <p className="text-zinc-800 font-semibold">{imovel.valorMinimoVenda}</p>
+        <p className="text-zinc-800 font-semibold">R$ {imovel.valorMinimoVenda.toLocaleString('pt-BR')}</p>
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Endereço:</p>

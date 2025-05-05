@@ -38,9 +38,8 @@ export default function Sidebar() {
     );
   };
 
-  
   return (
-    <aside className="w-96 min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
+    <aside className="w-[340px] min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
       <h2 className="text-zinc-500 font-semibold">
         Selecione as opções e facilite a sua busca
       </h2>

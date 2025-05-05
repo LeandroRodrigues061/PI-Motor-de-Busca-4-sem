@@ -3,7 +3,7 @@ import { Imovel } from "../models/Imovel";
 export const imoveis: Imovel[] = [
   {
     id: "11",
-    dataLeilao: "2025-04-10T13:00:00",
+    dataLeilao: "2025-04-10",
     tempoRestante: { dias: 14, horas: 8, minutos: 15, segundos: 22 },
     numeroImovel: "144441090080-3",
     valorAvaliacao: 850000.00,
@@ -18,7 +18,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "12",
-    dataLeilao: "2025-04-12T10:45:00",
+    dataLeilao: "2025-04-12",
     tempoRestante: { dias: 16, horas: 10, minutos: 5, segundos: 47 },
     numeroImovel: "144441090081-4",
     valorAvaliacao: 1250000.00,
@@ -33,7 +33,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "13",
-    dataLeilao: "2025-04-14T16:00:00",
+    dataLeilao: "2025-04-14",
     tempoRestante: { dias: 18, horas: 15, minutos: 30, segundos: 12 },
     numeroImovel: "144441090082-5",
     valorAvaliacao: 630000.00,
@@ -48,7 +48,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "14",
-    dataLeilao: "2025-04-11T12:20:00",
+    dataLeilao: "2025-04-11",
     tempoRestante: { dias: 15, horas: 3, minutos: 40, segundos: 59 },
     numeroImovel: "144441090083-6",
     valorAvaliacao: 920000.00,
@@ -63,7 +63,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "15",
-    dataLeilao: "2025-04-15T09:15:00",
+    dataLeilao: "2025-04-15",
     tempoRestante: { dias: 19, horas: 1, minutos: 20, segundos: 33 },
     numeroImovel: "144441090084-7",
     valorAvaliacao: 1450000.00,
@@ -78,7 +78,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "16",
-    dataLeilao: "2025-04-13T17:50:00",
+    dataLeilao: "2025-04-13",
     tempoRestante: { dias: 17, horas: 18, minutos: 55, segundos: 8 },
     numeroImovel: "144441090085-8",
     valorAvaliacao: 320000.00,
@@ -93,7 +93,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "17",
-    dataLeilao: "2025-04-16T11:30:00",
+    dataLeilao: "2025-04-16",
     tempoRestante: { dias: 20, horas: 6, minutos: 10, segundos: 17 },
     numeroImovel: "144441090086-9",
     valorAvaliacao: 780000.00,
@@ -108,7 +108,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "18",
-    dataLeilao: "2025-04-17T14:40:00",
+    dataLeilao: "2025-04-17",
     tempoRestante: { dias: 21, horas: 12, minutos: 25, segundos: 44 },
     numeroImovel: "144441090087-0",
     valorAvaliacao: 1100000.00,
@@ -123,7 +123,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "19",
-    dataLeilao: "2025-04-18T08:25:00",
+    dataLeilao: "2025-04-18",
     tempoRestante: { dias: 22, horas: 0, minutos: 5, segundos: 3 },
     numeroImovel: "144441090088-1",
     valorAvaliacao: 540000.00,
@@ -138,7 +138,7 @@ export const imoveis: Imovel[] = [
   },
   {
     id: "20",
-    dataLeilao: "2025-04-19T10:00:00",
+    dataLeilao: "2025-04-19",
     tempoRestante: { dias: 23, horas: 4, minutos: 45, segundos: 50 },
     numeroImovel: "144441090089-2",
     valorAvaliacao: 970000.00,
