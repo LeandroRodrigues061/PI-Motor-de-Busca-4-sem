@@ -13,10 +13,13 @@ services:
       - type: volume
         source: mongo-data
         target: /data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d  # Diretório com scripts de inicialização
   next-app:
     build:
-      context: C:\Users\kendi\OneDrive\Documentos\GitHub\PI-Motor-de-Busca-4-sem\next-app
+      context: ./next-app
       dockerfile: Dockerfile
+    volumes:
+      - ./next-app:/app   # <--- adicionado aqui  
     depends_on:
       mongo:
         condition: service_started

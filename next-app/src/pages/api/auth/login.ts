@@ -17,6 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const user = await User.findOne({ email });
+  console.log("acho que o email é esse: ", email)
 
   if (!user) {  
     return res.status(404).json({ message: 'Usuário não encontrado' });

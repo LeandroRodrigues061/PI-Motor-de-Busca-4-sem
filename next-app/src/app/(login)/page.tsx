@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthForm from "@/components/login/AuthForm";
 import ModalForm from "@/components/login/ModalForm";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Login() {
   const router = useRouter();
@@ -27,21 +27,21 @@ export default function Login() {
   // Login
   const handleLogin = async () => {
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
       if (!res.ok) {
         const data = await res.json();
-        return toast.error(data.message || 'Erro no login');
+        return toast.error(data.message || "Erro no login");
       }
-      toast.success('Login realizado com sucesso!');
-      router.push('/buscador');
+      toast.success("Login realizado com sucesso!");
+      router.push("/buscador");
     } catch (error) {
-      toast.error('Erro ao conectar com o servidor.');
+      toast.error("Erro ao conectar com o servidor.");
       console.error(error);
     }
   };
@@ -50,10 +50,10 @@ export default function Login() {
 
   const checkEmail = async () => {
     try {
-      const res = await fetch('/api/auth/email-check', {
-        method: 'POST',
+      const res = await fetch("/api/auth/email-check", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
       });
@@ -61,14 +61,14 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        return toast.error(data.message || 'Erro ao verificar o email');
+        return toast.error(data.message || "Erro ao verificar o email");
       }
 
       // Se email for encontrado, faz algo (exemplo: habilita a verificação da senha)
       setIsEmailCheck(true);
-      toast.success('Email encontrado no banco de dados!');
+      toast.success("Email encontrado no banco de dados!");
     } catch (error) {
-      toast.error('Erro na comunicação com o servidor.');
+      toast.error("Erro na comunicação com o servidor.");
       console.error(error);
     }
   };
@@ -78,7 +78,7 @@ export default function Login() {
 
   const changePassword = () => {
     if (password !== confirmPassword) {
-      return toast.error('As senhas não coincidem, tente novamente!');
+      return toast.error("As senhas não coincidem, tente novamente!");
     }
     setIsPasswordChecked(true);
     // IMPLEMENTAÇÃO DO BACKEND
@@ -95,7 +95,7 @@ export default function Login() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <div   className="w-full h-screen grid grid-cols-2 bg-white">
+      <div className="w-full h-screen grid grid-cols-2 bg-white">
         <article className="flex flex-col items-center justify-center pb-40 bg-[url('/img/background-image.png')] bg-no-repeat bg-center">
           <div className="flex flex-col justify-center items-center w-[500px] text-center">
             <Image
