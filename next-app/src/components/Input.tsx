@@ -21,7 +21,7 @@ import {
 
 export interface inputProps{
   title: string;
-  content: any;
+  content: Array<string>;
 }
 export default function Input(props: inputProps){
   const {title, content} = props;

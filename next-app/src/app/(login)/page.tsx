@@ -3,17 +3,17 @@ import { IconArrowLeft } from "@tabler/icons-react";
 import ReactDOM from "react-dom";
 import Image from "next/image";
 import { useState } from "react";
-import users from "@/data/constants/Users";
 import { useRouter } from "next/navigation";
 import AuthForm from "@/components/login/AuthForm";
 import ModalForm from "@/components/login/ModalForm";
 import toast, { Toaster } from 'react-hot-toast';
+
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [isEmailCheck, setIsEmailCheck] = useState(false);
   // Form para login ou recupeção de senha
   const [mode, setMode] = useState("login");
 
@@ -25,25 +25,52 @@ export default function Login() {
   };
 
   // Login
-  const handleLogin = () => {
-    const userFound = users.find(
-      (user) => user.email === email && user.password === password
-    );
-    if (!userFound) {
-      return toast.error('Email ou senha incorretos!');
+  const handleLogin = async () => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        return toast.error(data.message || 'Erro no login');
+      }
+      toast.success('Login realizado com sucesso!');
+      router.push('/buscador');
+    } catch (error) {
+      toast.error('Erro ao conectar com o servidor.');
+      console.error(error);
     }
-    router.push("/buscador");
   };
 
   // Email existente? para liberar campos de nova senha
-  const [isEmailCheck, setIsEmailCheck] = useState(false);
 
-  const emailChecked = () => {
-    const userFound = users.find((user) => user.email === email);
-    if (!userFound) {
-      return toast.error('Email não encontrado no banco de dados!');
+  const checkEmail = async () => {
+    try {
+      const res = await fetch('/api/auth/email-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return toast.error(data.message || 'Erro ao verificar o email');
+      }
+
+      // Se email for encontrado, faz algo (exemplo: habilita a verificação da senha)
+      setIsEmailCheck(true);
+      toast.success('Email encontrado no banco de dados!');
+    } catch (error) {
+      toast.error('Erro na comunicação com o servidor.');
+      console.error(error);
     }
-    setIsEmailCheck(true);
   };
 
   // mudar senha
@@ -102,7 +129,7 @@ export default function Login() {
             }`}
           >
             <button
-              onClick={back}
+              onClick={handleLogin}
               type="button"
               className="text-zinc-500 hover:text-zinc-600 flex items-center gap-2 cursor-pointer transition-colors duration-20 pt-10"
             >
@@ -121,7 +148,7 @@ export default function Login() {
             forgotPasswordMode={forgotPasswordMode}
             handleLogin={handleLogin}
             isEmailCheck={isEmailCheck}
-            emailChecked={emailChecked}
+            emailChecked={checkEmail}
             changePassword={changePassword}
           />
         </article>

@@ -1,16 +1,40 @@
-version: '3.8'
-
+name: pi-motor-de-busca-4-sem
 services:
+  mongo:
+    image: mongo:latest
+    networks:
+      - app-network
+    ports:
+      - target: 27017
+        published: "27017"
+        protocol: tcp
+    restart: always
+    volumes:
+      - type: volume
+        source: mongo-data
+        target: /data/db
   next-app:
-    build: ./next-app
-    ports:
-      - "3000:3000"
+    build:
+      context: C:\Users\kendi\OneDrive\Documentos\GitHub\PI-Motor-de-Busca-4-sem\next-app
+      dockerfile: Dockerfile
     depends_on:
-      - flask-api
+      mongo:
+        condition: service_started
+        required: true
     environment:
-      - FLASK_API_URL=http://flask-api:5000
-
-  flask-api:
-    build: ./python-api
+      MONGO_URI: mongodb://mongo:27017/MotorDeBusca
+    networks:
+      - app-network
     ports:
-      - "5000:5000"
+      - target: 3000
+        published: "3000"
+        protocol: tcp
+
+networks:
+  app-network:
+    name: pi-motor-de-busca-4-sem_app-network
+    driver: bridge
+
+volumes:
+  mongo-data:
+    name: pi-motor-de-busca-4-sem_mongo-data

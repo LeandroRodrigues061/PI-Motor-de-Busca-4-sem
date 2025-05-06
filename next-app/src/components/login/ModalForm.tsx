@@ -26,7 +26,8 @@ export default function ModalForm(props: modalFormProps) {
             variant="primary"
             size="full"
             onClick={() => {
-              back(), closeModal();
+              back(); 
+              closeModal();
             }}
           >
             <IconArrowLeft />
