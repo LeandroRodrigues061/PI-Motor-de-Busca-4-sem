@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { dbConnect } from '@/lib/mongodb';
 import User from '@/data/models/User';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await dbConnect();
@@ -32,9 +33,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } );
 
+      // Gerar JWT
+  const payload = {
+      userId: user._id,
+      email: user.email,
+        // Adicione outras informações não sensíveis do usuário aqui
+    };
+
   // if (!isPasswordValid) {
   //   return res.status(401).json({ message: 'Senha incorreta' });
   // }
 
-  return res.status(200).json({ message: 'Login bem-sucedido', user: { email: user.email } });
+  const secretKey = process.env.JWT_SECRET || 'BuscadorLastrearOMelhorDeSaoPaulo'; // Use uma variável de ambiente!
+  const token = jwt.sign(payload, secretKey, { expiresIn: '4h' }); // Token expira em 1 hora
+
+  console.log("Token gerado:", token); // Para verificar se o token está sendo gerado
+
+  return res.status(200).json({ message: 'Login bem-sucedido', token, user: { email: user.email } });
 }
