@@ -10,7 +10,7 @@ import tempfile
 
 # Conectar ao MongoDB com verificação
 try:
-    client = MongoClient("mongodb://mongo:27017", serverSelectionTimeoutMS=5000)
+    client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
     db = client["MotorDeBusca"]
     client.server_info()
     print("✅ Conectado ao MongoDB.")
