@@ -15,6 +15,7 @@ services:
       - type: volume
         source: mongo-data
         target: /data/db
+      - ./next-app/scripts/init.js:/docker-entrypoint-initdb.d/init.js:ro
   next-app:
     build:
       context: ./next-app
