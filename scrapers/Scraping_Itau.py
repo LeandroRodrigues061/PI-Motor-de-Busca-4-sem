@@ -7,7 +7,7 @@ from pymongo import MongoClient, errors
 
 # Conectar ao MongoDB
 try:
-    client = MongoClient("mongodb://mongo:27017/", serverSelectionTimeoutMS=5000)
+    client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
     db = client["MotorDeBusca"]
     client.server_info()  # Força uma conexão para verificar se está tudo certo
     print("✅ Conectado ao MongoDB com sucesso.")

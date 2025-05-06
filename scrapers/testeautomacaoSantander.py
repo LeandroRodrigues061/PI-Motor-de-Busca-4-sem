@@ -12,7 +12,7 @@ from datetime import datetime
 
 from pymongo import MongoClient
 
-client = MongoClient("mongodb://mongo:27017")
+client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin")
 db = client["MotorDeBusca"]
 
 def parse_valor(valor_str):

@@ -10,7 +10,7 @@ from pymongo import MongoClient, errors
 
 # Conectar ao MongoDB com validação
 try:
-    client = MongoClient("mongodb://mongo:27017", serverSelectionTimeoutMS=5000)
+    client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
     db = client["MotorDeBusca"]
     client.server_info()  # Força a verificação de conexão
     print("✅ Conectado ao MongoDB.")

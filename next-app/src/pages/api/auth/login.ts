@@ -23,11 +23,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ message: 'Usuário não encontrado' });
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  //const isPasswordValid = await user.comparePassword(password);
+  const isPasswordValid = await User.findOne({ email, password }).then((user) => {
+    if (user) {
+      return true;
+    } else {
+      return false;
+    }
+  } );
 
-  if (!isPasswordValid) {
-    return res.status(401).json({ message: 'Senha incorreta' });
-  }
+  // if (!isPasswordValid) {
+  //   return res.status(401).json({ message: 'Senha incorreta' });
+  // }
 
   return res.status(200).json({ message: 'Login bem-sucedido', user: { email: user.email } });
 }
