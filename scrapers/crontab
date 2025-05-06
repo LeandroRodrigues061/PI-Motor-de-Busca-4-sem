@@ -1,0 +1,1 @@
+0 12 * * * root python /app/run_all.py >> /var/log/cron.log 2>&1
