@@ -1,24 +1,19 @@
 "use client";
+import { useFiltro } from "@/context/FilterContext";
 import { useState } from "react";
 import estados from "@/data/constants/Estados";
 import Estado from "@/data/models/Estado";
 import { Button } from "./Button";
-interface sideBarProps {
-  onBuscar: (filtros: {
-    estado: Estado | null;
-    cidade: string | null;
-    bairros: string[];
-    tipoImovel: string;
-    valor: string;
-  }) => void;
-}
-
+import Banco from "@/data/models/Banco";
+import bancos from "@/data/constants/Bancos"
 interface Cidade {
   nome: string;
   bairros: string[];
 }
 
-export default function Sidebar({onBuscar} :sideBarProps) {
+export default function Sidebar() {
+  const { filtros, setFiltros } = useFiltro();
+
   const [estadoSelecionado, setEstadoSelecionado] = useState<Estado | null>(
     null
   );
@@ -28,6 +23,7 @@ export default function Sidebar({onBuscar} :sideBarProps) {
   const [bairrosSelecionados, setBairrosSelecionados] = useState<string[]>([]);
   const [tipoImovel, setTipoImovel] = useState<string>("indiferente");
   const [valor, setValor] = useState<string>("");
+  const [bancosSelecionados, setBancosSelecionados] = useState<string[]>([])
   const cidadesDisponiveis: Cidade[] = estadoSelecionado?.cidade || [];
 
   const bairrosDisponiveis: string[] =
@@ -43,7 +39,7 @@ export default function Sidebar({onBuscar} :sideBarProps) {
   };
 
   return (
-    <aside className="w-96 h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
+    <aside className="w-[340px] min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
       <h2 className="text-zinc-500 font-semibold">
         Selecione as opções e facilite a sua busca
       </h2>
@@ -64,15 +60,14 @@ export default function Sidebar({onBuscar} :sideBarProps) {
               setBairrosSelecionados([]);
             }}
           >
-            <option value="" >Selecione o estado</option>
+            <option value="">Selecione o estado</option>
             {estados.map((estado: Estado) => (
-              <option key={estado.id} value={estado.id} >
+              <option key={estado.id} value={estado.id}>
                 {estado.name}
               </option>
             ))}
           </select>
         </div>
-        
 
         {/* Cidade */}
         <div className="flex flex-col gap-2">
@@ -84,7 +79,9 @@ export default function Sidebar({onBuscar} :sideBarProps) {
               setBairrosSelecionados([]);
             }}
             disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600 ${!estadoSelecionado ? "cursor-no-drop" : ""}`}
+            className={`border rounded-xl p-2 text-zinc-600 ${
+              !estadoSelecionado ? "cursor-no-drop" : ""
+            }`}
           >
             <option value="">Selecione a cidade</option>
             {cidadesDisponiveis.map((cidade: Cidade) => (
@@ -105,7 +102,9 @@ export default function Sidebar({onBuscar} :sideBarProps) {
                   type="checkbox"
                   value={bairro}
                   disabled={!estadoSelecionado}
-                  className={`border rounded-xl p-2 text-zinc-600" ${!estadoSelecionado ? "cursor-no-drop " : ""}`}
+                  className={`border rounded-xl p-2 text-zinc-600" ${
+                    !estadoSelecionado ? "cursor-no-drop " : ""
+                  }`}
                   checked={bairrosSelecionados.includes(bairro)}
                   onChange={() => toggleBairro(bairro)}
                 />
@@ -115,58 +114,93 @@ export default function Sidebar({onBuscar} :sideBarProps) {
           </div>
         )}
 
-              {/* Tipo de Imóvel */}
-      <div className="flex justify-between ">
-        <label className="font-semibold text-xl text-zinc-900">Tipo de imóvel:</label>
-        <select
-          value={tipoImovel}
-          onChange={(e) => setTipoImovel(e.target.value)}
-          disabled={!estadoSelecionado}
-          className={`border rounded-xl p-2 text-zinc-600" ${!estadoSelecionado ? "cursor-no-drop " : ""}`}
-        >
-          <option value="indiferente">Indiferente</option>
-          <option value="casa">Casa</option>
-          <option value="apartamento">Apartamento</option>
-          <option value="outros">Outros</option>
-        </select>
-      </div>
-              {/* faixa de valor */}
-      <div className="flex flex-col gap-2">
-        <label className="font-semibold text-xl text-zinc-6  00">Faixa de valor:</label>
-        <select
-          value={tipoImovel}
-          onChange={(e) => setTipoImovel(e.target.value)}
-          disabled={!estadoSelecionado}
-          className={`border rounded-xl p-2 text-zinc-600" ${!estadoSelecionado ? "cursor-no-drop " : ""}`}
-        >
-          <option value=">100000">Até R$ 100.000,00</option>
-          <option value="100001-200000">R$ 100.000,01 - - - R$ 200.000,00 </option>
-          <option value="200002-400000">R$ 200.000,01 - - - R$ 400.000,00 </option>
-          <option value="400001-750000">R$ 400.000,01 - - - R$ 750.000,00 </option>
-          <option value="> 750000">Acima de R$ 750.000,00 </option>
-        </select>
-      </div>
-
-        {/* Resultado */}
-        <div className="my-4 p-2 bg-gray-100 rounded">
-          <strong>Filtro aplicado:</strong>
-          <div>Estado: {estadoSelecionado?.name || "Nenhum"}</div>
-          <div>Cidade: {cidadeSelecionada || "Nenhuma"}</div>
-          <div>Bairros: {bairrosSelecionados.join(", ") || "Nenhum"}</div>
+        {/* Tipo de Imóvel */}
+        <div className="flex flex-col gap-2 justify-between ">
+          <label className="font-semibold text-xl text-zinc-900">
+            Tipo de imóvel
+          </label>
+          <select
+            value={tipoImovel}
+            onChange={(e) => setTipoImovel(e.target.value)}
+            disabled={!estadoSelecionado}
+            className={`border rounded-xl p-2 text-zinc-600" ${
+              !estadoSelecionado ? "cursor-no-drop " : ""
+            }`}
+          >
+            <option value="indiferente">Indiferente</option>
+            <option value="casa">Casa</option>
+            <option value="apartamento">Apartamento</option>
+            <option value="outros">Outros</option>
+          </select>
+        </div>
+        {/* faixa de valor */}
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-xl text-zinc-900">
+            Faixa de valor
+          </label>
+          <select
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            disabled={!estadoSelecionado}
+            className={`border rounded-xl p-2 text-zinc-600 text-sm ${
+              !estadoSelecionado ? "cursor-no-drop " : ""
+            }`}
+          >
+            <option className="text-xl" value="">Não especificado</option>
+            <option value="<100000">Até R$ 100.000,00</option>
+            <option value="100001-200000">
+              R$ 100.000,01 - R$ 200.000,00{" "}
+            </option>
+            <option value="200002-400000">
+              R$ 200.000,01 - R$ 400.000,00{" "}
+            </option>
+            <option value="400001-750000">
+              R$ 400.000,01 - R$ 750.000,00{" "}
+            </option>
+            <option value=">750000">Acima de R$ 750.000,00 </option>
+          </select>
         </div>
       </div>
-      <span className="w-full h-[0.5px] rounded-2xl bg-zinc-300"></span>
-      <Button variant="primary" size="full" onClick={() =>
-        onBuscar({
-          estado: estadoSelecionado,
-          cidade: cidadeSelecionada,
-          bairros: bairrosSelecionados,
-          tipoImovel,
-          valor
-        })
-      }>
-
+      <div className="flex flex-col gap-2">
+        <h2 className="text-xl font-semibold text-zinc-900">Bancos</h2>
+      
+          {bancos.map((banco) => (
+            <label key={banco.id} className="flex gap-2">
+              <input 
+                type="checkbox" 
+                value={banco.name}
+                disabled={!estadoSelecionado}
+                checked={bancosSelecionados.includes(banco.name)}
+                onChange={() => {
+                  setBancosSelecionados((prev) =>
+                    prev.includes(banco.name)
+                      ? prev.filter((nome) => nome !== banco.name)
+                      : [...prev, banco.name]
+                  );
+                }}
+              />
+              {banco.name.charAt(0).toUpperCase() + banco.name.slice(1)}
+            </label>
+          ))}
         
+      </div>
+
+      <span className="w-full h-[0.5px] mt-6 mb-2 rounded-2xl bg-zinc-300"></span>
+
+      <Button
+        variant="primary"
+        size="full"
+        onClick={() => {
+          setFiltros({
+            estado: estadoSelecionado,
+            cidade: cidadeSelecionada,
+            bairros: bairrosSelecionados,
+            tipoImovel,
+            valor,
+            banco: bancosSelecionados
+          });
+        }}
+      >
         <p className="font-semibold">Buscar</p>
       </Button>
     </aside>

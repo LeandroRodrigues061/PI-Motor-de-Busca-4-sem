@@ -5,4 +5,5 @@ export default interface Estado {
     nome: string;
     bairros: string[];
   }[];
+  
 }

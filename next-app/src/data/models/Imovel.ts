@@ -12,4 +12,9 @@ export interface Imovel {
   valorMinimoVenda: number;
   endereco: string;
   imagem: string; // URL da imagem
+  tipoImovel: string;
+  estado: string;
+  cidade: string;
+  bairro: string;
+  banco: string;
 }

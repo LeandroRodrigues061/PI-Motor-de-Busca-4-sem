@@ -1,15 +1,37 @@
+version: '3.8'
+
 services:
-  next-app:
-    build: ./next-app
-    ports:
-      - "3000:3000"
-  
   mongo:
-    image: mongo
+    image: mongo:latest
+    container_name: mongo
+    restart: always
     ports:
-      - "27017:27017"
+      - target: 27017
+        published: "27017"
+        protocol: tcp
+    networks:
+      - app-network
     volumes:
-      - mongo-data:/data/db
+      - type: volume
+        source: mongo-data
+        target: /data/db
+
+  next-app:
+    build:
+      context: ./next-app
+      dockerfile: Dockerfile
+    depends_on:
+      mongo:
+        condition: service_started
+        required: true
+    environment:
+      MONGO_URI: mongodb://mongo:27017/MotorDeBusca
+    ports:
+      - target: 3000
+        published: "3000"
+        protocol: tcp
+    networks:
+      - app-network
 
   scrapers:
     build: ./scrapers
@@ -18,6 +40,14 @@ services:
       - mongo
     volumes:
       - ./scrapers:/app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: pi-motor-de-busca-4-sem_app-network
+    driver: bridge
 
 volumes:
   mongo-data:
+    name: pi-motor-de-busca-4-sem_mongo-data
