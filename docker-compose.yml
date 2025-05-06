@@ -1,19 +1,20 @@
-name: pi-motor-de-busca-4-sem
+version: '3.8'
+
 services:
   mongo:
     image: mongo:latest
-    networks:
-      - app-network
+    container_name: mongo
+    restart: always
     ports:
       - target: 27017
         published: "27017"
         protocol: tcp
-    restart: always
+    networks:
+      - app-network
     volumes:
       - type: volume
         source: mongo-data
         target: /data/db
-      - ./mongo-init:/docker-entrypoint-initdb.d  # Diretório com scripts de inicialização
   next-app:
     build:
       context: ./next-app
@@ -26,12 +27,22 @@ services:
         required: true
     environment:
       MONGO_URI: mongodb://mongo:27017/MotorDeBusca
-    networks:
-      - app-network
     ports:
       - target: 3000
         published: "3000"
         protocol: tcp
+    networks:
+      - app-network
+
+  scrapers:
+    build: ./scrapers
+    container_name: scrapers
+    depends_on:
+      - mongo
+    volumes:
+      - ./scrapers:/app
+    networks:
+      - app-network
 
 networks:
   app-network:
