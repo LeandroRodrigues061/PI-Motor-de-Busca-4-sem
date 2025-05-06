@@ -1,10 +1,10 @@
 'use client'
 import Template from "@/components/layout/Template";
 import { useState } from "react";
-import { IconArrowDown, IconArrowUp, IconClock, IconCalendarEvent, IconBellDollar } from "@tabler/icons-react";
 import { useFiltro } from "@/context/FilterContext";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
+import SubFiltros from "@/components/buscador/SubFiltros";
 
 export default function Buscador() {
   const { filtrarImoveis } = useFiltro();
@@ -66,34 +66,11 @@ export default function Buscador() {
           <h1 className="text-3xl font-semibold text-zinc-900">Buscador</h1>
         </div>
 
-        <div className="flex items-center gap-4 flex-wrap">
-          <button
-            onClick={() => handleFiltro("valor")}
-            className={`px-6 py-2 hover:text-primary font-semibold transition-all border rounded-xl cursor-pointer flex gap-1 items-center ${
-              filter === "valor" ? "border-primary text-primary" : "border-zinc-300 text-zinc-500"
-            }`}
-          >
-            Valor avaliação {filter === "valor" && (crescente ? <IconArrowUp size={16} /> : <IconArrowDown size={16} />)}
-          </button>
-
-          <button
-            onClick={() => handleFiltro("dataLeilao")}
-            className={`px-6 py-2 hover:text-primary font-semibold transition-all border rounded-xl cursor-pointer flex gap-1 items-center ${
-              filter === "dataLeilao" ? "border-primary text-primary" : "border-zinc-300 text-zinc-500"
-            }`}
-          >
-            Data Leilão {filter === "dataLeilao" && (crescente ? <IconArrowUp size={16} /> : <IconArrowDown size={16} />)}
-          </button>
-
-          <button
-            onClick={() => handleFiltro("tempoRestante")}
-            className={`px-6 py-2 hover:text-primary font-semibold transition-all border rounded-xl cursor-pointer flex gap-1 items-center ${
-              filter === "tempoRestante" ? "border-primary text-primary" : "border-zinc-300 text-zinc-500"
-            }`}
-          >
-            Tempo Restante {filter === "tempoRestante" && (crescente ? <IconArrowUp size={16} /> : <IconArrowDown size={16} />)}
-          </button>
-        </div>
+        <SubFiltros 
+          crescente={crescente} 
+          filter={filter} 
+          handleFiltro={handleFiltro} 
+        />
 
         <div className="w-full h-[0.5px] bg-zinc-300 rounded-2xl my-2" />
         <p className="text-zinc-500">
