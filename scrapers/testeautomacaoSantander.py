@@ -6,13 +6,41 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
-import csv
 import tempfile
+import re
+from datetime import datetime
 
 from pymongo import MongoClient
 
 client = MongoClient("mongodb://mongo:27017")
 db = client["MotorDeBusca"]
+
+def parse_valor(valor_str):
+    if not valor_str:
+        return None
+    valor_str = valor_str.replace("R$", "").replace(".", "").replace(",", ".").strip()
+    try:
+        return float(valor_str)
+    except ValueError:
+        return None
+
+def parse_area(area_str):
+    if not area_str:
+        return None
+    match = re.search(r'([\d,.]+)', area_str.replace(".", "").replace(",", "."))
+    return float(match.group(1)) if match else None
+
+def parse_int_from_text(text):
+    if not text:
+        return None
+    match = re.search(r'\d+', text)
+    return int(match.group()) if match else None
+
+def parse_datetime(data_str, hora_str):
+    try:
+        return datetime.strptime(f"{data_str} {hora_str}", "%d/%m/%Y %Hh%M")
+    except Exception:
+        return None
 
 def extrair_dados_imoveis(html):
     soup = BeautifulSoup(html, 'html.parser')
@@ -45,8 +73,8 @@ def extrair_dados_imoveis(html):
 
         valor_ant = body.find('div', class_='card-valor-ant') if body else None
         valor_atual = body.find('div', class_='card-valor-atual') if body else None
-        card_data['valor_anterior'] = get_text_safe(valor_ant)
-        card_data['valor_atual'] = get_text_safe(valor_atual)
+        card_data['valor_anterior'] = parse_valor(get_text_safe(valor_ant))
+        card_data['valor_atual'] = parse_valor(get_text_safe(valor_atual))
 
         cod = body.find('small') if body else None
         card_data['codigo'] = get_text_safe(cod)
@@ -55,23 +83,31 @@ def extrair_dados_imoveis(html):
         if data_info:
             data_hora = data_info.find_all('strong')
             if len(data_hora) >= 2:
-                card_data['data'] = get_text_safe(data_hora[0])
-                card_data['hora'] = get_text_safe(data_hora[1])
+                data_str = get_text_safe(data_hora[0])
+                hora_str = get_text_safe(data_hora[1])
+                card_data['data_hora_leilao'] = parse_datetime(data_str, hora_str)
             else:
-                card_data['data'] = card_data['hora'] = None
+                card_data['data_hora_leilao'] = None
         else:
-            card_data['data'] = card_data['hora'] = None
+            card_data['data_hora_leilao'] = None
+
+        # Inicializar como None
+        area, quartos, vagas = None, None, None
 
         if footer:
             textos = footer.find_all('p')
             for texto in textos:
                 txt = get_text_safe(texto)
                 if 'm²' in txt:
-                    card_data['area'] = txt
+                    area = parse_area(txt)
                 elif 'quarto' in txt:
-                    card_data['quartos'] = txt
+                    quartos = parse_int_from_text(txt)
                 elif 'vaga' in txt:
-                    card_data['vagas'] = txt
+                    vagas = parse_int_from_text(txt)
+
+        card_data['area'] = area
+        card_data['quartos'] = quartos
+        card_data['vagas'] = vagas
 
         imoveis.append(card_data)
 
