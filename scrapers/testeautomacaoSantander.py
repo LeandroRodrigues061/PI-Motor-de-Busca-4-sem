@@ -18,6 +18,8 @@ db = client["MotorDeBusca"]
 def parse_valor(valor_str):
     if not valor_str:
         return None
+    # Remove qualquer texto não numérico no início
+    valor_str = re.sub(r'[^\dR$]', '', valor_str)
     valor_str = valor_str.replace("R$", "").replace(".", "").replace(",", ".").strip()
     try:
         return float(valor_str)
@@ -42,6 +44,7 @@ def parse_datetime(data_str, hora_str):
     except Exception:
         return None
 
+
 def extrair_dados_imoveis(html):
     soup = BeautifulSoup(html, 'html.parser')
     cards = soup.find_all('a', class_='card')
@@ -51,33 +54,12 @@ def extrair_dados_imoveis(html):
 
     imoveis = []
     for card in cards:
-        card_data = {}
-
         header = card.find('a', class_='card-header')
         body = card.find('div', class_='card-body')
         footer = card.find('div', class_='card-footer')
 
-        card_data['url'] = header['href'] if header and header.has_attr('href') else None
-
-        style = header.get('style', '') if header else ''
-        if 'url(' in style:
-            card_data['imagem'] = style.split('url("')[1].split('")')[0]
-        else:
-            card_data['imagem'] = None
-
-        badge = header.find('span', class_='badge badge-dark') if header else None
-        card_data['tipo_leilao'] = get_text_safe(badge)
-
-        svg = header.find('svg') if header else None
-        card_data['endereco'] = svg.find_next_sibling(string=True).strip() if svg else None
-
-        valor_ant = body.find('div', class_='card-valor-ant') if body else None
-        valor_atual = body.find('div', class_='card-valor-atual') if body else None
-        card_data['valor_anterior'] = parse_valor(get_text_safe(valor_ant))
-        card_data['valor_atual'] = parse_valor(get_text_safe(valor_atual))
-
-        cod = body.find('small') if body else None
-        card_data['codigo'] = get_text_safe(cod)
+        valor_atual_raw = get_text_safe(body.find('div', class_='card-valor-atual') if body else None)
+        valor_atual = parse_valor(valor_atual_raw)
 
         data_info = body.find('div', class_='card-data') if body else None
         if data_info:
@@ -85,31 +67,27 @@ def extrair_dados_imoveis(html):
             if len(data_hora) >= 2:
                 data_str = get_text_safe(data_hora[0])
                 hora_str = get_text_safe(data_hora[1])
-                card_data['data_hora_leilao'] = parse_datetime(data_str, hora_str)
+                data_leilao = parse_datetime(data_str, hora_str)
             else:
-                card_data['data_hora_leilao'] = None
+                data_leilao = None
         else:
-            card_data['data_hora_leilao'] = None
+            data_leilao = None
 
-        # Inicializar como None
-        area, quartos, vagas = None, None, None
+        endereco = None
+        if header:
+            svg = header.find('svg')
+            endereco = svg.find_next_sibling(string=True).strip() if svg else None
 
-        if footer:
-            textos = footer.find_all('p')
-            for texto in textos:
-                txt = get_text_safe(texto)
-                if 'm²' in txt:
-                    area = parse_area(txt)
-                elif 'quarto' in txt:
-                    quartos = parse_int_from_text(txt)
-                elif 'vaga' in txt:
-                    vagas = parse_int_from_text(txt)
-
-        card_data['area'] = area
-        card_data['quartos'] = quartos
-        card_data['vagas'] = vagas
-
-        imoveis.append(card_data)
+        imoveis.append({
+            "estado": "SP",
+            "cidade": "São Paulo",
+            "tipo_imovel": get_text_safe(header.find('span', class_='badge badge-dark') if header else None),
+            "endereco": endereco,
+            "faixa_valor": valor_atual,
+            "banco": "Santander",
+            "data_leilao": data_leilao,
+            "valor_avaliacao": None  # Não existe para Santander
+        })
 
     return imoveis
 
