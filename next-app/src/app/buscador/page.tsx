@@ -1,15 +1,23 @@
 'use client'
 import Template from "@/components/layout/Template";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFiltro } from "@/context/FilterContext";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
 import SubFiltros from "@/components/buscador/SubFiltros";
+import { useSidebar } from "@/context/SideBarContext";
 
 export default function Buscador() {
   const { filtrarImoveis } = useFiltro();
   const imoveisFiltrados = filtrarImoveis();
-
+  
+  // Quando entrar nesta pagina atualiza o contexto da sideBar para renderizar a sideBar correta
+  const { setTipo } = useSidebar()
+  const setFiltrosSidebar = () => setTipo('filter');
+  useEffect(() => {
+    setFiltrosSidebar();
+  }, []);
+  
   // valor, dataLeilao, tempoRestante — padrão é null (usa dataPublicacao)
   const [filter, setFilter] = useState<"valor" | "dataLeilao" | "tempoRestante" | null>(null);
   const [crescente, setCrescente] = useState(false); // começa decrescente para mostrar os mais recentes
