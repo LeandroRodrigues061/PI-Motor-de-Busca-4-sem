@@ -2,6 +2,7 @@
 
 import { useSidebar } from "@/context/SideBarContext";
 import SidebarFilters from "./buscador/SideBarFilters";
+import SideBarUserConfig from "./perfil/SideBarUserConfig";
 
 export default function Sidebar() {
   const {tipo, setTipo } = useSidebar()
@@ -10,6 +11,6 @@ export default function Sidebar() {
     case 'filter':
       return <SidebarFilters />
     case 'user_config':
-      return <div>oi</div>
+      return <SideBarUserConfig />
   }
 }
