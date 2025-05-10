@@ -58,9 +58,15 @@ def extrair_dados_imoveis(html):
         body = card.find('div', class_='card-body')
         footer = card.find('div', class_='card-footer')
 
-        valor_atual_raw = get_text_safe(body.find('div', class_='card-valor-atual') if body else None)
-        valor_atual = parse_valor(valor_atual_raw)
-
+        valor_atual = None
+        if body:
+            preco_div = body.find('div', class_='card-preco')
+            if preco_div:
+                valor_raw = preco_div.find('strong')
+                if valor_raw:
+                    valor_atual = get_text_safe(valor_raw)
+                    print(f"[DEBUG] Valor como string: {valor_atual}", flush=True)
+            
         data_info = body.find('div', class_='card-data') if body else None
         if data_info:
             data_hora = data_info.find_all('strong')
