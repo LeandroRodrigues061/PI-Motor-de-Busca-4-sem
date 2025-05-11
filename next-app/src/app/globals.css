@@ -3,12 +3,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme  {
-
-}
-
 body {
   font-family: "Inter", Helvetica, sans-serif;
+}
+
+@layer utilities {
+  @keyframes fade-in-down {
+    0% {
+      opacity: 0;
+      transform: translateY(-15px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-down {
+    animation: fade-in-down 0.30s ease-out both;
+  }
 }
 
 @theme inline {

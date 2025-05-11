@@ -8,6 +8,7 @@ import {
 import { useState } from "react";
 import { Button } from "../Button";
 import Field from "./Field";
+import Link from "next/link";
 
 export interface authFormProps {
   mode: string;
@@ -116,6 +117,14 @@ export default function AuthForm(props: authFormProps) {
             <p className="text-xl font-semibold">{"Entrar"}</p>
             <IconArrowRight size={24} />
           </Button>
+          <div className="w-full flex justify-start">
+              <p className="text-sm text-zinc-600">
+                Não possui uma conta?
+                <Link href={"/register"}>
+                  <span className="text-primary cursor-pointer"> Cadastre-se </span>
+                </Link>
+              </p>
+            </div>
         </>
       ) : (
         <>
