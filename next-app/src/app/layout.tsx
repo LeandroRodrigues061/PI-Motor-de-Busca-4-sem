@@ -26,8 +26,7 @@ export default function RootLayout({
           <SidebarProvider>
             {children}
           </SidebarProvider>
-        </FiltroProvider>
-        
+        </FiltroProvider>  
       </body>
     </html>
   );
