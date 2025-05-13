@@ -1,18 +1,33 @@
 'use client'
 import Template from "@/components/layout/Template";
-import { useState } from "react";
-import { useFiltro } from "@/context/FilterContext";
+import { useState, useEffect } from "react";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
 import SubFiltros from "@/components/buscador/SubFiltros";
+import { Imovel } from "@/data/models/Imovel";
 
 export default function Buscador() {
-  const { filtrarImoveis } = useFiltro();
-  const imoveisFiltrados = filtrarImoveis();
-
-  // valor, dataLeilao, tempoRestante — padrão é null (usa dataPublicacao)
+  const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [filter, setFilter] = useState<"valor" | "dataLeilao" | "tempoRestante" | null>(null);
   const [crescente, setCrescente] = useState(false); // começa decrescente para mostrar os mais recentes
+
+  // Função para buscar os imóveis da API
+  const fetchImoveis = async () => {
+    try {
+      const response = await fetch("/api/imoveis"); // Substitua pelo endpoint correto
+      const data = await response.json();
+      console.log("dados adicionados")
+      setImoveis(data);
+      console.log(setImoveis) // Armazena os dados no estado
+    } catch (error) {
+      console.error("Erro ao buscar imóveis:", error);
+    }
+  };
+
+  // useEffect para buscar os imóveis ao carregar a página
+  useEffect(() => {
+    fetchImoveis();
+  }, []);
 
   const handleFiltro = (tipo: typeof filter) => {
     if (filter === tipo) {
@@ -22,41 +37,6 @@ export default function Buscador() {
       setCrescente(true); // novo filtro começa com ordem crescente
     }
   };
-
-  const imoveisOrdenados = [...imoveisFiltrados];
-
-  if (filter === "valor") {
-    imoveisOrdenados.sort((a, b) =>
-      crescente
-        ? a.valorAvaliacao - b.valorAvaliacao
-        : b.valorAvaliacao - a.valorAvaliacao
-    );
-  } else if (filter === "dataLeilao") {
-    imoveisOrdenados.sort((a, b) =>
-      crescente
-        ? new Date(a.dataLeilao).getTime() - new Date(b.dataLeilao).getTime()
-        : new Date(b.dataLeilao).getTime() - new Date(a.dataLeilao).getTime()
-    );
-  } else if (filter === "tempoRestante") {
-    imoveisOrdenados.sort((a, b) => {
-      const totalA =
-        a.tempoRestante.dias * 86400 +
-        a.tempoRestante.horas * 3600 +
-        a.tempoRestante.minutos * 60 +
-        a.tempoRestante.segundos;
-      const totalB =
-        b.tempoRestante.dias * 86400 +
-        b.tempoRestante.horas * 3600 +
-        b.tempoRestante.minutos * 60 +
-        b.tempoRestante.segundos;
-      return crescente ? totalA - totalB : totalB - totalA;
-    });
-  } else {
-    // Ordena por data de publicação (padrão)
-    imoveisOrdenados.sort((a, b) =>
-      new Date(b.dataLeilao).getTime() - new Date(a.dataLeilao).getTime()
-    );
-  }
 
   return (
     <Template>
@@ -74,13 +54,13 @@ export default function Buscador() {
 
         <div className="w-full h-[0.5px] bg-zinc-300 rounded-2xl my-2" />
         <p className="text-zinc-500">
-          Foram encontrados <span className="font-semibold">{imoveisFiltrados.length}</span> imóveis
+          Foram encontrados <span className="font-semibold">{imoveis.length}</span> imóveis
         </p>
 
         <div className="flex flex-col gap-6">
-          {imoveisFiltrados.length !== 0 ? (
-            imoveisOrdenados.map((imovel) => (
-              <ImovelCard key={imovel.id} imovel={imovel} />
+          {imoveis.length !== 0 ? (
+            imoveis.map((imovel) => (
+              <ImovelCard key={imovel._id} imovel={imovel} />
             ))
           ) : (
             <div className="w-[900px] flex flex-col py-2 px-20 items-center justify-center gap-4">

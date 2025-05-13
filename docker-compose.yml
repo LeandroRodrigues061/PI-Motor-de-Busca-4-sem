@@ -25,7 +25,8 @@ services:
       context: ./next-app
       dockerfile: DockerFile
     volumes:
-      - ./next-app:/app
+      - .:/app # Monta o diretório atual no contêiner
+      - /app/node_modules # Evita sobrescrever os node_modules do contêiner
     depends_on:
       mongo:
         condition: service_started
@@ -38,6 +39,7 @@ services:
         protocol: tcp
     networks:
       - app-network
+    command: npm run dev # Comando para rodar o servidor de desenvolvimento
 
   scrapers:
     build: ./scrapers
