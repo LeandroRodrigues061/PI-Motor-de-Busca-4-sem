@@ -1,15 +1,17 @@
-"use client"
+"use client";
 import Header from "./Header";
 import SideBar from "../SideBar";
-import { VLibrasPlugin } from "@/data/hooks/VLibrasPLugin";
 export interface templateProps {
   className?: string; //tem que ter pois iremos usar classname no componente
   children: React.ReactNode; //tem que ter pois iremos colocar elementos filhos dentro deste componente
 }
 export default function Template(props: templateProps) {
-
   return (
     <>
+      <script
+        src="https://cdn.userway.org/widget.js"
+        data-account="bwZNl4VRup"
+      ></script>
       <div className="flex flex-col overflow-x-hidden h-full">
         <Header />
         <main
@@ -21,7 +23,6 @@ export default function Template(props: templateProps) {
           {props.children}
         </main>
       </div>
-      <VLibrasPlugin />
     </>
   );
 }

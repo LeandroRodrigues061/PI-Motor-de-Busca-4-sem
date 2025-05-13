@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+
 @custom-variant dark (&:is(.dark *));
 
 body {
@@ -22,6 +23,13 @@ body {
   .animate-fade-in-down {
     animation: fade-in-down 0.30s ease-out both;
   }
+}
+/* Ajusta o botão do UserWay para o centro vertical da direita */
+#userwayAccessibilityIcon {
+  top: 80px !important;
+  
+  right: 15px !important;
+  left: auto !important;
 }
 
 @theme inline {
