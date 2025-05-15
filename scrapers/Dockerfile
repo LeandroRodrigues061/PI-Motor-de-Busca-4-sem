@@ -35,4 +35,4 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Comando padrão (pode trocar por run_all.py ou qualquer script)
-CMD ["python", "run_all.py"]
+CMD ["python", "-u", "run_all.py"]

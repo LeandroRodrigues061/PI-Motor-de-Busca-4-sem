@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from pymongo import MongoClient, errors
 import time
 import tempfile
+import re
 
 # Conectar ao MongoDB com verificação
 try:
@@ -18,7 +19,6 @@ except errors.ServerSelectionTimeoutError as err:
     print("❌ Erro ao conectar ao MongoDB:", err)
     exit(1)
 
-# Extração dos imóveis de uma única página
 def extrair_imoveis_da_pagina(driver):
     soup = BeautifulSoup(driver.page_source, "html.parser")
     lista_div = soup.find("div", id="listaimoveispaginacao")
@@ -28,25 +28,63 @@ def extrair_imoveis_da_pagina(driver):
 
     imoveis = []
     for div in imoveis_divs:
-        dados = {}
-        endereco = div.find("a")
-        if endereco:
-            dados["endereco"] = endereco.get_text(strip=True)
+        dados = {
+            "estado": "SP",  # fixo do filtro
+            "cidade": "SAO PAULO",
+            "banco": "CAIXA"
+        }
+
+        endereco_a = div.find("a")
+        if endereco_a:
+            texto_endereco = endereco_a.get_text(strip=True)
+            dados["endereco_completo_raw"] = texto_endereco
+
+            # Ex: "SAO PAULO - RESIDENCIAL DI PETRA | R$ 189.533,30"
+            partes = texto_endereco.split("|")
+            if len(partes) == 2:
+                localizacao, valor = partes
+                dados["valor"] = valor.strip()
+                dados["bairro"] = localizacao.strip().split("-")[-1].strip()
+            else:
+                dados["valor"] = None
+
+            dados["link"] = "https://venda-imoveis.caixa.gov.br" + endereco_a["href"]
 
         infos = div.find_all("font")
         for font in infos:
             texto = font.get_text(strip=True)
+
             if "Valor de avaliação" in texto:
-                dados["valor_avaliacao"] = texto
+                dados["valor_avaliacao"] = texto.split(":", 1)[-1].strip()
+
             elif "Valor mínimo de venda" in texto:
-                dados["valor_minimo"] = texto
+                dados["valor_minimo"] = texto.split(":", 1)[-1].strip()
+
             elif "Numero do imóvel" in texto:
-                dados["numero_imovel"] = texto
-            elif "Despesas do imóvel" in texto:
-                dados["despesas"] = texto
+                match = re.search(r"Numero do imóvel: ([\d\-\w]+)", texto)
+                if match:
+                    dados["numero_imovel"] = match.group(1).strip()
+
+            elif "Despesas do imóvel" in texto or "Número do item" in texto:
+                # Tenta extrair endereço e tipo do imóvel
+                linhas = texto.split("Número do item")
+                if len(linhas) > 1:
+                    final = linhas[1]
+                    partes_finais = final.split("\n")
+                    for linha in partes_finais:
+                        if "," in linha and "RUA" in linha:
+                            dados["endereco"] = linha.strip()
+                            if "-" in linha:
+                                dados["bairro"] = linha.split("-")[-1].strip()
+
+                # Tipo de imóvel (primeira parte antes de "- Leilão")
+                tipo_match = re.search(r"^([\w\s]+?)\s*-\s*.*Leilão", texto)
+                if tipo_match:
+                    dados["tipo_imovel"] = tipo_match.group(1).strip()
 
         imoveis.append(dados)
     return imoveis
+
 
 # Função principal do Selenium
 def extrair_imoveis_selenium():
