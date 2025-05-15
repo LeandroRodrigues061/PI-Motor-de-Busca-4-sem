@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body
-        className={`${inter.className}} antialiased`}
+        className={`${inter.className} antialiased`}
       >
         <FiltroProvider>
           <SidebarProvider>
