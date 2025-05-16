@@ -8,6 +8,10 @@ from pymongo import MongoClient, errors
 import time
 import tempfile
 import re
+import hashlib
+from collections import defaultdict
+
+
 
 # Conectar ao MongoDB com verificação
 try:
@@ -61,7 +65,7 @@ def extrair_imoveis_da_pagina(driver):
                 dados["valor_minimo"] = texto.split(":", 1)[-1].strip()
 
             elif "Numero do imóvel" in texto:
-                match = re.search(r"Numero do imóvel: ([\d\-\w]+)", texto)
+                match = re.search(r"Número do imóvel: ([\d\-\w]+)", texto)
                 if match:
                     dados["numero_imovel"] = match.group(1).strip()
 
@@ -156,26 +160,57 @@ def extrair_imoveis_selenium():
 
     return todos_os_imoveis
 
-# Salvar dados no MongoDB
+def gerar_id_unico(imovel):
+    base = f"{imovel.get('numero_imovel', '')}_{imovel.get('endereco_completo_raw', '')}_{imovel.get('valor', '')}_{imovel.get('bairro', '')}_{imovel.get('link', '')}"
+    return hashlib.md5(base.encode()).hexdigest()
+
+
+
 def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("⚠️ Nenhum dado para salvar no MongoDB.")
         return
     try:
         collection = db[nome_collection]
-        result = collection.insert_many(imoveis)
-        print(f"✅ {len(result.inserted_ids)} documentos inseridos na collection '{nome_collection}'.")
+
+        novos = 0
+        atualizados = 0
+
+        for imovel in imoveis:
+            # Gera o _id único baseado em hash dos dados relevantes
+            imovel['_id'] = gerar_id_unico(imovel)
+
+            result = collection.update_one(
+                {"_id": imovel["_id"]},   # chave única real
+                {"$set": imovel},         # insere ou atualiza
+                upsert=True
+            )
+
+            if result.upserted_id:
+                novos += 1
+            elif result.modified_count > 0:
+                atualizados += 1
+
+        print(f"✅ {novos} novos imóveis inseridos na collection '{nome_collection}'.")
+        print(f"🔄 {atualizados} imóveis atualizados.")
+
     except Exception as e:
         print("❌ Erro ao salvar no MongoDB:", e)
 
-# Execução principal
+        if "_id" in imovel:
+         print(f"ID gerado: {imovel['_id']}, Título: {imovel.get('titulo', '')}")
+
+
+    ids = [gerar_id_unico(imovel) for imovel in imoveis]
+    print(f"🎯 Total de imóveis: {len(imoveis)}")
+    print(f"🔍 IDs únicos: {len(set(ids))}")
+    duplicados = len(imoveis) - len(set(ids))
+    if duplicados > 0:
+        print(f"⚠️ Atenção: {duplicados} imóveis com _id duplicado detectados.")
+
+
 if __name__ == "__main__":
     dados = extrair_imoveis_selenium()
-
-    for i, imovel in enumerate(dados, 1):
-        print(f"🏠 Imóvel #{i}")
-        for k, v in imovel.items():
-            print(f"{k.capitalize()}: {v}")
-        print("-" * 40)
-
+    print(f"🔍 Total de imóveis extraídos: {len(dados)}")
     salvar_em_mongodb(dados, "imoveis_caixa")
+

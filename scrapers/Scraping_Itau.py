@@ -76,12 +76,36 @@ try:
             return
         try:
             collection = db[nome_collection]
-            result = collection.insert_many(imoveis)
-            print(f"✅ {len(result.inserted_ids)} documentos inseridos na collection '{nome_collection}'.")
+
+            # Cria índice único no campo 'imagem'
+            collection.create_index("imagem", unique=True)
+
+            novos = 0
+            atualizados = 0
+
+            for imovel in imoveis:
+                if not imovel.get("imagem"):
+                    continue  # Ignora se não houver imagem
+
+                result = collection.update_one(
+                    {"imagem": imovel["imagem"]},  # chave única
+                    {"$set": imovel},
+                    upsert=True
+                )
+
+                if result.upserted_id:
+                    novos += 1
+                elif result.modified_count > 0:
+                    atualizados += 1
+
+            print(f"✅ {novos} novos imóveis inseridos na collection '{nome_collection}'.")
+            print(f"🔄 {atualizados} imóveis atualizados.")
+
         except Exception as e:
             print("❌ Erro ao salvar no MongoDB:", e)
-
+            
     salvar_em_mongodb(dados, "imoveis_itau")
+
 
 finally:
     driver.quit()

@@ -83,13 +83,37 @@ def salvar_em_mongodb(imoveis, nome_collection):
         return
     try:
         collection = db[nome_collection]
-        result = collection.insert_many(imoveis)
-        print(f"{len(result.inserted_ids)} documentos inseridos na collection '{nome_collection}'.")
+
+        # Cria índice único no campo 'link' (se ainda não existir)
+        collection.create_index("descricao", unique=True)
+
+        novos = 0
+        atualizados = 0
+
+        for imovel in imoveis:
+            if not imovel.get("descricao"):
+                continue  # Ignora se não houver descrição
+
+            result = collection.update_one(
+                {"descricao": imovel["descricao"]},
+                {"$set": imovel},
+                upsert=True
+            )
+
+            if result.upserted_id:
+                novos += 1
+            elif result.modified_count > 0:
+                atualizados += 1
+
+        print(f"✅ {novos} novos imóveis inseridos na collection '{nome_collection}'.")
+        print(f"🔄 {atualizados} imóveis atualizados.")
+
     except Exception as e:
-        print("Erro ao salvar no MongoDB:", e)
+        print("❌ Erro ao salvar no MongoDB:", e)
 
-# Executar scraping e salvar no MongoDB
-dados = extrair_dados()
-salvar_em_mongodb(dados, "imoveis_bradesco")
 
+if __name__ == "__main__":
+    imoveis = extrair_dados()
+    salvar_em_mongodb(imoveis, "imoveis_bradesco")
 driver.quit()
+
