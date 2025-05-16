@@ -20,71 +20,73 @@ except errors.ServerSelectionTimeoutError as err:
     exit(1)
 
 def extrair_imoveis_da_pagina(driver):
-    soup = BeautifulSoup(driver.page_source, "html.parser")
-    lista_div = soup.find("div", id="listaimoveispaginacao")
-    if not lista_div:
-        return []
-    imoveis_divs = lista_div.find_all("div", class_="dadosimovel-col2")
+    imoveis_divs = driver.find_elements(By.CLASS_NAME, "group-block-item")
+    print(f"🔍 {len(imoveis_divs)} imóveis encontrados na página.")
 
     imoveis = []
     for div in imoveis_divs:
         dados = {
-            "estado": "SP",  # fixo do filtro
+            "estado": "SP",
             "cidade": "SAO PAULO",
             "banco": "CAIXA"
         }
 
-        endereco_a = div.find("a")
-        if endereco_a:
-            texto_endereco = endereco_a.get_text(strip=True)
-            dados["endereco_completo_raw"] = texto_endereco
+        try:
+            # Número do imóvel (extraído do onclick do <img>)
+            img_tag = div.find_element(By.CLASS_NAME, "fotoimovel-col1").find_element(By.TAG_NAME, "img")
+            onclick = img_tag.get_attribute("onclick")
+            numero_match = re.search(r"detalhe_imovel\((\d+)\)", onclick)
+            if numero_match:
+                numero_imovel = numero_match.group(1)
+                dados["numero_imovel"] = numero_imovel
+                dados["imagem"] = f"https://venda-imoveis.caixa.gov.br/fotos/F{numero_imovel}21.jpg"
+                dados["link"] = f"https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel={numero_imovel}"
 
-            # Ex: "SAO PAULO - RESIDENCIAL DI PETRA | R$ 189.533,30"
-            partes = texto_endereco.split("|")
+            # Bloco com os dados textuais
+            dados_div = div.find_element(By.CLASS_NAME, "dadosimovel-col2")
+
+            # Endereço e valor no <a>
+            a_tag = dados_div.find_element(By.TAG_NAME, "a")
+            texto_a = a_tag.text.strip()
+
+            partes = texto_a.split("|")
             if len(partes) == 2:
-                localizacao, valor = partes
+                _, valor = partes
                 dados["valor"] = valor.strip()
-                dados["bairro"] = localizacao.strip().split("-")[-1].strip()
             else:
                 dados["valor"] = None
 
-            dados["link"] = "https://venda-imoveis.caixa.gov.br" + endereco_a["href"]
+            # Todos os <font> com dados textuais adicionais
+            fontes = dados_div.find_elements(By.TAG_NAME, "font")
+            for fonte in fontes:
+                linhas = fonte.text.strip().splitlines()
+                
+                for linha in linhas:
+                    linha = linha.strip()
 
-        infos = div.find_all("font")
-        for font in infos:
-            texto = font.get_text(strip=True)
+                    if "Valor de avaliação" in linha:
+                        dados["valor_avaliacao"] = linha.split(":", 1)[-1].strip()
+                    elif "Valor mínimo de venda" in linha:
+                        dados["valor_minimo"] = linha.split(":", 1)[-1].strip()
+                    elif "Despesas do imóvel" in linha:
+                        if "detalhes" not in dados:
+                            dados["detalhes"] = {}
+                        dados["detalhes"]["despesas"] = linha.split(":", 1)[-1].strip()
+                    elif "Número do imóvel" in linha:
+                        dados["numero_imovel"] = linha.split(":")[-1].strip().replace("-", "")
+                        dados["imagem"] = f"https://venda-imoveis.caixa.gov.br/fotos/F{dados['numero_imovel']}21.jpg"
+                        dados["link"] = f"https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel={dados['numero_imovel']}"
+                    elif linha.upper().startswith("RUA") or linha.upper().startswith("AVENIDA"):
+                        dados["endereco"] = linha.strip().title()
+                    elif "Leilão" in linha and "-" in linha:
+                        dados["tipo_imovel"] = linha.split("-")[0].strip()
 
-            if "Valor de avaliação" in texto:
-                dados["valor_avaliacao"] = texto.split(":", 1)[-1].strip()
-
-            elif "Valor mínimo de venda" in texto:
-                dados["valor_minimo"] = texto.split(":", 1)[-1].strip()
-
-            elif "Numero do imóvel" in texto:
-                match = re.search(r"Numero do imóvel: ([\d\-\w]+)", texto)
-                if match:
-                    dados["numero_imovel"] = match.group(1).strip()
-
-            elif "Despesas do imóvel" in texto or "Número do item" in texto:
-                # Tenta extrair endereço e tipo do imóvel
-                linhas = texto.split("Número do item")
-                if len(linhas) > 1:
-                    final = linhas[1]
-                    partes_finais = final.split("\n")
-                    for linha in partes_finais:
-                        if "," in linha and "RUA" in linha:
-                            dados["endereco"] = linha.strip()
-                            if "-" in linha:
-                                dados["bairro"] = linha.split("-")[-1].strip()
-
-                # Tipo de imóvel (primeira parte antes de "- Leilão")
-                tipo_match = re.search(r"^([\w\s]+?)\s*-\s*.*Leilão", texto)
-                if tipo_match:
-                    dados["tipo_imovel"] = tipo_match.group(1).strip()
+        except Exception as e:
+            print("⚠️ Erro ao processar imóvel:", e)
 
         imoveis.append(dados)
-    return imoveis
 
+    return imoveis
 
 # Função principal do Selenium
 def extrair_imoveis_selenium():
@@ -164,18 +166,11 @@ def salvar_em_mongodb(imoveis, nome_collection):
     try:
         collection = db[nome_collection]
         result = collection.insert_many(imoveis)
-        print(f"✅ {len(result.inserted_ids)} documentos inseridos na collection '{nome_collection}'.")
+
     except Exception as e:
         print("❌ Erro ao salvar no MongoDB:", e)
 
 # Execução principal
 if __name__ == "__main__":
     dados = extrair_imoveis_selenium()
-
-    for i, imovel in enumerate(dados, 1):
-        print(f"🏠 Imóvel #{i}")
-        for k, v in imovel.items():
-            print(f"{k.capitalize()}: {v}")
-        print("-" * 40)
-
     salvar_em_mongodb(dados, "imoveis_caixa")
