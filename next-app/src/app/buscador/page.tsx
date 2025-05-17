@@ -41,8 +41,8 @@ export default function Buscador() {
   return (
     <Template>
       <section className="flex flex-col p-8 gap-4">
-        <div className="flex gap-1 items-center">
-          <div className="w-1 h-6 bg-primary" />
+        <div className="flex gap-2 items-center">
+          <div className="w-1 h-6 bg-primary rounded-lg" />
           <h1 className="text-3xl font-semibold text-zinc-900">Buscador</h1>
         </div>
 
