@@ -3,7 +3,6 @@ import { Button } from "../Button";
 import { IconHeart } from "@tabler/icons-react";
 import { Imovel }  from "@/data/models/Imovel";
 import bancos from "@/data/constants/Bancos";
-import { useState } from "react";
 
 export interface imovelProps{
   imovel: Imovel;
@@ -22,12 +21,12 @@ export default function ImovelCard(props: imovelProps) {
   
   return(
     <div key={imovel._id} className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-start w-[900px] h-[280px] flex gap-6">
-    {/* <div className="relative rounded-xl w-72 h-52">
+    <div className="relative rounded-xl w-72 h-52">
       <Image src={imovel.imagem} alt="imagem da casa" fill className="object-contain"/>
-    </div> */}
+    </div>
     <div className="flex flex-col gap-[7px] w-full">
-       {/* <div className="flex gap-[6px] items-center">
-        <p className="text-zinc-600">Tempo restante:</p>
+      {/* <div className="flex gap-[6px] items-center">
+          <p className="text-zinc-600">Tempo restante:</p>
         <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
           <p className="text-white font-semibold">{tempoRestante.dias} dias</p>
         </div>
@@ -40,23 +39,23 @@ export default function ImovelCard(props: imovelProps) {
         <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
           <p className="text-white font-semibold">{tempoRestante.segundos} seg</p>
         </div>
-      </div> 
+      </div> */}
       <div className="flex gap-1">
-        <p className="text-zinc-600">Data do leilão:</p>
-        <p className="text-zinc-800 font-semibold">{imovel.dataLeilao}</p>
+        {/* <p className="text-zinc-600">Data do leilão:</p>
+        <p className="text-zinc-800 font-semibold">{imovel.dataLeilao}</p> */}
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Número do imóvel:</p>
         <p className="text-zinc-800 font-semibold">{imovel.numeroImovel}</p>
-      </div>
+      </div>  
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor de avaliação:</p>
-        <p className="text-zinc-800 font-semibold">R$ {imovel.valorAvaliacao.toLocaleString('pt-BR')}</p>
+        <p className="text-zinc-800 font-semibold">R$ {imovel.valorAvaliacao}</p>
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor mínimo de venda:</p>
-        <p className="text-zinc-800 font-semibold">R$ {imovel.valorMinimoVenda.toLocaleString('pt-BR')}</p>
-      </div> */}
+        {/* <p className="text-zinc-800 font-semibold">R$ {imovel.valorMinimoVenda.toLocaleString('pt-BR')}</p> */}
+      </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Endereço:</p>
         <p className="text-zinc-800 font-semibold">{imovel.endereco}</p>

@@ -10,7 +10,7 @@ import Link from "next/link";
 
 export default function Cadastro(){
   const router = useRouter();
-  const [name, setName] = useState("")
+  const [nome, setNome] = useState("")
   const [cargo, setCargo] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -48,8 +48,8 @@ export default function Cadastro(){
               <input
                 type="text"
                 placeholder="Digite seu nome"
-                onChange={(e) => setName(e.target.value)}
-                value={name}
+                onChange={(e) => setNome(e.target.value)}
+                value={nome}
                 className="outline-none text-zinc-500 w-full"
               />
             </Field>
