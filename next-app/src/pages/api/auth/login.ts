@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { dbConnect } from '@/lib/mongodb';
 import User from '@/data/models/User';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -24,30 +23,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ message: 'Usuário não encontrado' });
   }
 
-  //const isPasswordValid = await user.comparePassword(password);
-  const isPasswordValid = await User.findOne({ email, password }).then((user) => {
-    if (user) {
-      return true;
-    } else {
-      return false;
-    }
-  } );
+  const isPasswordValid = await user.comparePassword(password);
 
-      // Gerar JWT
+  // Gerar JWT
   const payload = {
-      userId: user._id,
       email: user.email,
-        // Adicione outras informações não sensíveis do usuário aqui
+      nome: user.nome,
     };
 
-  // if (!isPasswordValid) {
-  //   return res.status(401).json({ message: 'Senha incorreta' });
-  // }
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: 'Senha incorreta' });
+  }
 
-  const secretKey = process.env.JWT_SECRET || 'BuscadorLastrearOMelhorDeSaoPaulo'; // Use uma variável de ambiente!
-  const token = jwt.sign(payload, secretKey, { expiresIn: '4h' }); // Token expira em 1 hora
-
-  console.log("Token gerado:", token); // Para verificar se o token está sendo gerado
+  const secretKey = process.env.JWT_SECRET || 'BuscadorLastrearOMelhorDeSaoPaulo';
+  const token = jwt.sign(payload, secretKey, { expiresIn: '4h' }); 
 
   return res.status(200).json({ message: 'Login bem-sucedido', token, user: { email: user.email } });
 }
