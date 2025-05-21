@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 from pymongo import MongoClient, errors
+from pymongo.errors import BulkWriteError
 import time
 import tempfile
 import re
@@ -13,7 +14,6 @@ from collections import defaultdict
 
 
 
-# Conectar ao MongoDB com verificação
 try:
     client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
     db = client["MotorDeBusca"]
@@ -32,11 +32,10 @@ def extrair_imoveis_da_pagina(driver):
         dados = {
             "estado": "SP",
             "cidade": "SAO PAULO",
-            "banco": "CAIXA"
+            "banco": "Caixa"
         }
 
         try:
-            # Número do imóvel (extraído do onclick do <img>)
             img_tag = div.find_element(By.CLASS_NAME, "fotoimovel-col1").find_element(By.TAG_NAME, "img")
             onclick = img_tag.get_attribute("onclick")
             numero_match = re.search(r"detalhe_imovel\((\d+)\)", onclick)
@@ -46,10 +45,8 @@ def extrair_imoveis_da_pagina(driver):
                 dados["imagem"] = f"https://venda-imoveis.caixa.gov.br/fotos/F{numero_imovel}21.jpg"
                 dados["link"] = f"https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel={numero_imovel}"
 
-            # Bloco com os dados textuais
             dados_div = div.find_element(By.CLASS_NAME, "dadosimovel-col2")
 
-            # Endereço e valor no <a>
             a_tag = dados_div.find_element(By.TAG_NAME, "a")
             texto_a = a_tag.text.strip()
 
@@ -60,7 +57,6 @@ def extrair_imoveis_da_pagina(driver):
             else:
                 dados["valor"] = None
 
-            # Todos os <font> com dados textuais adicionais
             fontes = dados_div.find_elements(By.TAG_NAME, "font")
             for fonte in fontes:
                 linhas = fonte.text.strip().splitlines()
@@ -92,7 +88,6 @@ def extrair_imoveis_da_pagina(driver):
 
     return imoveis
 
-# Função principal do Selenium
 def extrair_imoveis_selenium():
     options = Options()
     options.add_argument('--headless')
@@ -109,13 +104,11 @@ def extrair_imoveis_selenium():
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
 
     try:
-        # Seleciona Estado e Cidade
         Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text("SP")
         time.sleep(2)
         Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_cidade")))).select_by_visible_text("SAO PAULO")
         time.sleep(3)
 
-        # Avançar etapas
         wait.until(EC.element_to_be_clickable((By.ID, "btn_next0"))).click()
         time.sleep(1)
         wait.until(EC.element_to_be_clickable((By.ID, "btn_next1"))).click()
@@ -172,16 +165,24 @@ def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("⚠️ Nenhum dado para salvar no MongoDB.")
         return
+
+    collection = db[nome_collection]
+
+    for imovel in imoveis:
+        imovel["_id"] = gerar_id_unico(imovel)
+
     try:
-        collection = db[nome_collection]
+        result = collection.insert_many(imoveis, ordered=False)
+        print(f"✅ {len(result.inserted_ids)} imóveis inseridos com sucesso.")
+    except BulkWriteError as bwe:
+        erros = bwe.details.get('writeErrors', [])
+        total_erros = len(erros)
+        print(f"⚠️ {total_erros} imóveis duplicados ignorados (já existiam no MongoDB).")
 
-        result = collection.insert_many(imoveis)
-
-    except Exception as e:
-        print("❌ Erro ao salvar no MongoDB:", e)
-
-        if "_id" in imovel:
-         print(f"ID gerado: {imovel['_id']}, Título: {imovel.get('titulo', '')}")
+    total = len(imoveis)
+    unicos = len(set(gerar_id_unico(i) for i in imoveis))
+    print(f"🎯 Total de imóveis processados: {total}")
+    print(f"🔍 IDs únicos: {unicos}")
 
 
     ids = [gerar_id_unico(imovel) for imovel in imoveis]

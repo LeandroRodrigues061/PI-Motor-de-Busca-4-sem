@@ -71,7 +71,8 @@ def extrair_dados():
         dados.append({
             "imagem": imagem,
             "descricao": descricao,
-            "valor": valor
+            "valor": valor,
+            "Banco": "Bradesco"
         })
 
     print(f"🔎 {len(dados)} imóveis extraídos.")

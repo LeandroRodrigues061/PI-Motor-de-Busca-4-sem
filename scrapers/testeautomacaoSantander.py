@@ -34,6 +34,8 @@ def extrair_dados_imoveis(html):
     for card in cards:
         card_data = {}
 
+        card_data['Banco'] = 'Santander'
+
         header = card.find('a', class_='card-header')
         body = card.find('div', class_='card-body')
         footer = card.find('div', class_='card-footer')

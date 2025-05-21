@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import JavascriptException, NoSuchElementException
+from selenium.common.exceptions import JavascriptException, NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.shadowroot import ShadowRoot
@@ -11,7 +11,6 @@ import time
 import tempfile
 from pymongo import MongoClient, errors
 
-# Conectar ao MongoDB
 try:
     client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
     db = client["MotorDeBusca"]
@@ -21,7 +20,6 @@ except errors.ServerSelectionTimeoutError as err:
     print("❌ Erro ao conectar ao MongoDB:", err)
     exit(1)
 
-# Configurar Chrome headless
 options = Options()
 options.headless = False
 options.add_argument('--headless')
@@ -40,7 +38,7 @@ driver = webdriver.Chrome(options=options)
 try:
     driver.get("https://www.itau.com.br/imoveis-itau?estado=S%C3%83O+PAULO&cidade=SAO+PAULO")
 
-    time.sleep(5)  # deixa a página carregar scripts JS
+    time.sleep(5) 
 
     wait = WebDriverWait(driver, 30)  
     wait.until(lambda d: d.execute_script("return document.querySelector('app-leiloes-list') !== null"))
@@ -48,12 +46,14 @@ try:
     app_root = driver.find_element(By.CSS_SELECTOR, "app-leiloes-list")
     shadow_root = driver.execute_script("return arguments[0].shadowRoot", app_root)
 
-    # Aguardar até os cards estarem carregados
     container = shadow_root.find_element(By.CSS_SELECTOR, ".itau-leiloes-pagination-cards")
     cards = container.find_elements(By.CSS_SELECTOR, ".itau-leiloes-card")
 
     dados = []
     for card in cards:
+        encerramento = "N/A"
+        codigo = "N/A"
+
         try:
             imagem_element = card.find_element(By.CSS_SELECTOR, "img.itau-leiloes-carrousel-image")
             imagem = imagem_element.get_attribute("src")
@@ -61,12 +61,41 @@ try:
             imagem = "N/A"
 
         try:
-            endereco_element = card.find_element(By.CSS_SELECTOR, ".itau-leiloes-card-info")
+            tags = card.find_elements(By.CSS_SELECTOR, "span.itau-leiloes-tag-label.--xsmall")
+            for tag in tags:
+                text = tag.text.lower()
+                if "encerra em" in text:
+                    encerramento = text.replace("encerra em", "").strip()
+                elif "código do imóvel" in text:
+                    codigo = text.replace("código do imóvel:", "").strip()
+        except Exception:
+            pass
+
+        try:
+            endereco_element = card.find_element(By.CSS_SELECTOR, ".itau-leiloes-card-info-street_address")
             endereco = endereco_element.text
+
+            valor_element = card.find_element(By.CSS_SELECTOR, ".itau-leiloes-card-info-current_price")
+            valor = valor_element.text
         except NoSuchElementException:
             endereco = "N/A"
 
-        dados.append({"imagem": imagem.strip(), "endereco": endereco.strip()})
+        dados.append({"Banco": "Itau","imagem": imagem.strip(), "endereco": endereco.strip(), "valor": valor.strip() if valor else "N/A", "codigo": codigo, "encerramento": encerramento})
+
+        try:
+            carregar_mais_button = shadow_root.find_element(By.CSS_SELECTOR, ".itau-leiloes-pagination-button")
+            driver.execute_script("arguments[0].click();", carregar_mais_button)
+            time.sleep(3)  
+        except NoSuchElementException:
+            print("🏁 Todos os leilões foram carregados.")
+            
+        except StaleElementReferenceException:
+            print("⚠️ Elemento 'carregar mais' ficou obsoleto. Tentando novamente...")
+            time.sleep(2)
+
+        except Exception as e:
+            print(f"❌ Ocorreu um erro durante a extração ou ao clicar em 'carregar mais': {e}")
+        
 
     print(f"🔎 {len(dados)} imóveis encontrados.")
 
@@ -77,7 +106,6 @@ try:
         try:
             collection = db[nome_collection]
 
-            # Cria índice único no campo 'imagem'
             collection.create_index("imagem", unique=True)
 
             novos = 0
@@ -85,10 +113,10 @@ try:
 
             for imovel in imoveis:
                 if not imovel.get("imagem"):
-                    continue  # Ignora se não houver imagem
+                    continue  
 
                 result = collection.update_one(
-                    {"imagem": imovel["imagem"]},  # chave única
+                    {"imagem": imovel["imagem"]},  
                     {"$set": imovel},
                     upsert=True
                 )
@@ -103,7 +131,6 @@ try:
 
         except Exception as e:
             print("❌ Erro ao salvar no MongoDB:", e)
-            
     salvar_em_mongodb(dados, "imoveis_itau")
 
 
