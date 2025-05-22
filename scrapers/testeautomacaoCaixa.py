@@ -19,7 +19,7 @@ except errors.ServerSelectionTimeoutError as err:
     print("❌ Erro ao conectar ao MongoDB:", err)
     exit(1)
 
-def extrair_detalhes_imovel(driver):
+def extrair_detalhes_imovel(driver, numero_imovel):
     import re
     import time
     from bs4 import BeautifulSoup
@@ -30,9 +30,9 @@ def extrair_detalhes_imovel(driver):
 
     # Título do imóvel (ex: "VILA AUSTRIA")
     titulo = None
-    h2 = soup.find("h2")
-    if h2:
-        titulo = h2.text.strip()
+    h5 = soup.find("h5")
+    if h5:
+        titulo = h5.text.strip()
     detalhes["titulo"] = titulo
 
     # Endereço completo
@@ -51,23 +51,8 @@ def extrair_detalhes_imovel(driver):
             bairro = bairro_match.group(1).strip()
     detalhes["bairro"] = bairro
 
-    # Cidade e UF (tenta extrair do endereço)
-    cidade = uf = None
-    if endereco:
-        cidade_uf_match = re.search(r"CEP:\s*\d{5}-\d{3},\s*([^-\n]+)-\s*([A-Z]{2,})", endereco)
-        if cidade_uf_match:
-            cidade = cidade_uf_match.group(1).strip()
-            uf = cidade_uf_match.group(2).strip()
-        else:
-            # Alternativa: pega o final do endereço
-            partes = endereco.split(",")
-            if len(partes) > 1:
-                possivel_cidade_uf = partes[-1].strip().split("-")
-                if len(possivel_cidade_uf) == 2:
-                    cidade = possivel_cidade_uf[0].strip()
-                    uf = possivel_cidade_uf[1].strip()
-    detalhes["cidade"] = cidade
-    detalhes["uf"] = uf
+    detalhes["cidade"] = "São Paulo"
+    detalhes["uf"] = "SP"
 
     # Valor de avaliação
     valor_avaliacao = None
@@ -110,6 +95,12 @@ def extrair_detalhes_imovel(driver):
             if texto:
                 formas_pagamento.append(texto.strip())
     detalhes["formas_pagamento"] = formas_pagamento
+    
+    detalhes["link"] = f"https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel={numero_imovel}"
+    
+    detalhes["imagem"] = f"https://venda-imoveis.caixa.gov.br/fotos/F{numero_imovel}21.jpg"
+    
+    detalhes["banco"] = "CAIXA"
 
     return detalhes
 
@@ -194,9 +185,9 @@ def processar_todos_imoveis_por_link(driver, lista_imoveis):
         try:
             url = f"https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel={item['numero_imovel']}"
             driver.get(url)
-            wait.until(EC.presence_of_element_located((By.ID, "dadosImovel")))
-            detalhes = extrair_detalhes_imovel(driver)
-            detalhes["numero_imovel"] = item["numero_imovel"]
+            wait.until(EC.presence_of_element_located((By.ID, "dadosImovel")))        
+            detalhes = extrair_detalhes_imovel(driver, item['numero_imovel'])
+            detalhes["numero_imovel"] = item["numero_imovel"]    
             imoveis.append(detalhes)
         except Exception as e:
             print(f"Erro ao processar imóvel {item['numero_imovel']}: {e}")
@@ -215,6 +206,7 @@ def salvar_em_mongodb(imoveis, nome_collection):
 
 if __name__ == "__main__":
     options = Options()
+    options.add_argument('--headless')
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
