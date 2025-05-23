@@ -60,19 +60,42 @@ def extrair_dados():
 
         try:
             descricao = card.find_element(By.CLASS_NAME, "description").text.strip()
+            data_leilao = descricao.split("|")[0].strip().split(":")[1].strip()
+            endereco_leilao = descricao.split("|")[1].strip().split("Área")[0].strip()
         except:
             descricao = "N/A"
+            data_leilao = "N/A"
+            endereco_leilao = "N/A"
 
         try:
-            valor = card.find_element(By.CLASS_NAME, "bottom").text.split("\n")[0].strip()
+            valor_inicial = card.find_element(By.CLASS_NAME, "price > p").text
         except:
-            valor = "N/A"
+            valor_inicial = "N/A"
+        try:
+            link_element = card.find_element(By.TAG_NAME, "a")
+            link = link_element.get_attribute("href")
+            
+            if not link or link == "#":
+                print(f"Alerta: Link vazio ou inválido encontrado. Definindo como N/A para: {descricao if 'descricao' in locals() else 'N/A'}")
+                link = "N/A"
+            else:
+
+                if not link.startswith("http"):
+                    link = "https://vitrinebradesco.com.br" + link
+
+        except Exception as e:
+            print(f"Erro ao extrair link para o card: {e}. Link será N/A.")
+            link = "N/A"
+
 
         dados.append({
-            "imagem": imagem,
             "descricao": descricao,
-            "valor": valor,
-            "Banco": "Bradesco"
+            "imagem": imagem,
+            "data_leilao": data_leilao,
+            "endereco_leilao": endereco_leilao,
+            "valor_inicial": valor_inicial,
+            "Banco": "Bradesco",
+            "Link": link
         })
 
     print(f"🔎 {len(dados)} imóveis extraídos.")

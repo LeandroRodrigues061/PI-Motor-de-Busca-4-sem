@@ -67,7 +67,7 @@ try:
                 if "encerra em" in text:
                     encerramento = text.replace("encerra em", "").strip()
                 elif "código do imóvel" in text:
-                    codigo = text.replace("código do imóvel:", "").strip()
+                    codigo = text.replace("código do imovel:", "").strip()
         except Exception:
             pass
 
@@ -80,7 +80,7 @@ try:
         except NoSuchElementException:
             endereco = "N/A"
 
-        dados.append({"Banco": "Itau","imagem": imagem.strip(), "endereco": endereco.strip(), "valor": valor.strip() if valor else "N/A", "codigo": codigo, "encerramento": encerramento})
+        dados.append({"Banco": "Itau", "imagem": imagem.strip(), "endereco": endereco.strip(), "valor": valor.strip() if valor else "N/A", "codigo": codigo, "encerramento": encerramento})
 
         try:
             carregar_mais_button = shadow_root.find_element(By.CSS_SELECTOR, ".itau-leiloes-pagination-button")
