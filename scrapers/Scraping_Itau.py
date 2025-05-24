@@ -66,10 +66,12 @@ try:
                 text = tag.text.lower()
                 if "encerra em" in text:
                     encerramento = text.replace("encerra em", "").strip()
-                elif "código do imóvel" in text:
+                elif "código do imovel:" in text:
                     codigo = text.replace("código do imovel:", "").strip()
         except Exception:
             pass
+
+        link_imovel = "https://www.itau.com.br/imoveis-itau/detalhes?id=" + codigo
 
         try:
             endereco_element = card.find_element(By.CSS_SELECTOR, ".itau-leiloes-card-info-street_address")
@@ -80,7 +82,8 @@ try:
         except NoSuchElementException:
             endereco = "N/A"
 
-        dados.append({"Banco": "Itau", "imagem": imagem.strip(), "endereco": endereco.strip(), "valor": valor.strip() if valor else "N/A", "codigo": codigo, "encerramento": encerramento})
+
+        dados.append({"cidade": "SAO PAULO", "estado": "SP", "link": link_imovel, "Banco": "Itau", "imagem": imagem.strip(), "endereco": endereco.strip(), "valor_inicial": valor.strip() if valor else "N/A", "codigo": codigo, "data_encerramento": encerramento})
 
         try:
             carregar_mais_button = shadow_root.find_element(By.CSS_SELECTOR, ".itau-leiloes-pagination-button")
@@ -106,17 +109,17 @@ try:
         try:
             collection = db[nome_collection]
 
-            collection.create_index("imagem", unique=True)
+            collection.create_index("codigo", unique=True)
 
             novos = 0
             atualizados = 0
 
             for imovel in imoveis:
-                if not imovel.get("imagem"):
-                    continue  
+                if "imagem" not in imovel or not imovel["imagem"]:
+                    imovel["imagem"] = f"sem_imagem_{imovel['codigo']}"
 
                 result = collection.update_one(
-                    {"imagem": imovel["imagem"]},  
+                    {"codigo": imovel["codigo"]},  
                     {"$set": imovel},
                     upsert=True
                 )
