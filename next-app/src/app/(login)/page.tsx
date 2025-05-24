@@ -35,15 +35,13 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        const data = await res.json();
-        return toast.error(data.message || "Erro no login");
+      if (res.ok) {
+        localStorage.setItem('authToken', data.token);
+        toast.success("Login realizado com sucesso!"); 
+        router.push("/buscador");
       }
-      toast.success("Login realizado com sucesso!");
-      localStorage.setItem('authToken', data.token);
-      router.push("/buscador");
+      toast.error(data.message || "Erro no login");
     } catch (error) {
-      toast.error("Erro ao conectar com o servidor.");
       console.error(error);
     }
   };
