@@ -10,10 +10,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Método não permitido' });
   }
 
-  const { nome,cargo,email,password } = req.body;
+  const { nome,cargo,email,password,confirmPassword } = req.body;
 
   if (!nome || !cargo || !email || !password) {
     return res.status(400).json({ message: 'Um dos parametros não foram achados' });
+  }
+
+  if(password !== confirmPassword){
+    return res.status(400).json({ message: 'As senhas não coincidem' });
   }
 
   const usuarioExistente = await User.findOne({ email });
