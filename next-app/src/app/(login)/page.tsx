@@ -35,8 +35,8 @@ export default function Login() {
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('authToken', data.token);
-        toast.success("Login realizado com sucesso!"); 
-        router.push("/buscador");
+        toast.success(data.message || "Login realizado com sucesso!"); 
+        return router.push("/buscador");
       }
       toast.error(data.message || "Erro no login");
     } catch (error) {
