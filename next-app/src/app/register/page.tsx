@@ -35,6 +35,7 @@ export default function Cadastro(){
         cargo,
         email,
         password,
+        confirmPassword
       }
       
     const response = await fetch("/api/auth/cadastro", {
@@ -52,7 +53,7 @@ export default function Cadastro(){
       } 
       toast.error(data.message || "Erro ao cadastrar");
     } catch (error) {
-      console.error("Erro ao cadastrar:", error);
+      console.error("Faltaram dados:", error);
     }
   };
 
