@@ -5,6 +5,7 @@ export interface IUser extends Document {
   nome: string;
   email: string;
   password: string;
+  cargo: string;
   comparePassword: (password: string) => Promise<boolean>;  
 }
 
@@ -12,6 +13,7 @@ const UserSchema: Schema<IUser> = new Schema({
   nome: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  cargo: { type: String, required: true },
 });
 
 // Cria o hash da senha antes de salvar

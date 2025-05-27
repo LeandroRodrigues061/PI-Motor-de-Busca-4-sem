@@ -1,23 +1,21 @@
 "use client";
 import { createContext, useContext, useState, ReactNode } from "react";
-import Estado from "@/data/models/Estado";
-import { imoveis } from "@/data/constants/Imoveis";
 import { Imovel } from "@/data/models/Imovel";
+
 interface Filtros {
-  estado: Estado | null;
+  estado: string | null;
   cidade: string | null;
   bairros: string[];
   tipoImovel: string;
   valor: string;
   banco: string[];
-   
 }
 
-// aqui ficam as funções e variaveis exportadas do contexto
+// aqui ficam as funções e variáveis exportadas do contexto
 interface FiltroContextType {
   filtros: Filtros;
   setFiltros: (filtros: Filtros) => void;
-  filtrarImoveis: () => Imovel[];
+  filtrarImoveis: () => Promise<Imovel[]>; // Agora é uma função assíncrona
 }
 
 const FiltroContext = createContext<FiltroContextType | undefined>(undefined);
@@ -29,64 +27,34 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
     bairros: [],
     tipoImovel: "indiferente",
     valor: "",
-    banco: []
+    banco: [],
   });
 
-  
-  const filtrarImoveis = (): Imovel[] => {
-    return imoveis.filter((imovel) => {
-      // Filtro por estado
-      if (filtros.estado && imovel.estado !== filtros.estado.name) {
-        return false;
+  // Função para buscar imóveis filtrados do backend
+  const filtrarImoveis = async (): Promise<Imovel[]> => {
+    try {
+      const response = await fetch("/api/imoveisfiltrados", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(filtros), // Envia os filtros para o backend
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao buscar imóveis do banco");
       }
 
-      // Filtro por cidade
-      if (filtros.cidade && imovel.cidade !== filtros.cidade) {
-        return false;
-      }
-
-      // Filtro por bairros, se algum bairro for selecionado
-      if (filtros.bairros.length > 0 && !filtros.bairros.includes(imovel.bairro)) {
-        return false;
-      }
-
-      // Filtro por tipo de imóvel (se diferente de "indiferente") e diferente do selecionado, decarte tudo
-      if (
-        filtros.tipoImovel.toLowerCase() !== "indiferente" &&
-        imovel.tipoImovel.toLowerCase() !== filtros.tipoImovel.toLowerCase()
-      ) {
-        return false;
-      }
-
-      // Filtro por faixa de valor
-      if (filtros.valor) {
-        const valorStr = filtros.valor;
-
-        if (valorStr.startsWith("<")) {
-          const limite = Number(valorStr.replace("<", ""));
-          if (imovel.valorAvaliacao >= limite) return false;
-
-        } else if (valorStr.startsWith(">")) {
-          const limite = Number(valorStr.replace(">", ""));
-          if (imovel.valorAvaliacao <= limite) return false;
-
-        } else if (valorStr.includes("-")) {
-          const [min, max] = valorStr.split("-").map(Number);
-          if (imovel.valorAvaliacao < min || imovel.valorAvaliacao > max) return false;
-        }
-      }
-
-      //Filtro de banco
-       if (filtros.banco.length > 0 && !filtros.banco.includes(imovel.banco)) {
-        return false;
-      }
-      return true;
-    });
+      const data: Imovel[] = await response.json();
+      return data; // Retorna os imóveis filtrados
+    } catch (error) {
+      console.error("Erro ao filtrar imóveis:", error);
+      return [];
+    }
   };
-  
 
   return (
-    <FiltroContext.Provider value={{ filtros, setFiltros,  filtrarImoveis }}>
+    <FiltroContext.Provider value={{ filtros, setFiltros, filtrarImoveis }}>
       {children}
     </FiltroContext.Provider>
   );
