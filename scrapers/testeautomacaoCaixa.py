@@ -101,6 +101,8 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     detalhes["imagem"] = f"https://venda-imoveis.caixa.gov.br/fotos/F{numero_imovel}21.jpg"
     
     detalhes["banco"] = "CAIXA"
+    
+    detalhes["favorito"] = False
 
     return detalhes
 
@@ -211,7 +213,6 @@ if __name__ == "__main__":
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
-    options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
