@@ -2,7 +2,6 @@
 import Template from "@/components/layout/Template";
 import { useSidebar } from "@/context/SideBarContext";
 import { useEffect, useState } from "react";
-import { imoveis } from "@/data/constants/Imoveis";
 import { IconSearch } from "@tabler/icons-react";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
@@ -15,6 +14,7 @@ export default function Perfil() {
 
   const [busca, setBusca] = useState("");
   const [imoveisPesquisados, setImoveisPesquisados] = useState(imoveis);
+  
   useEffect(() => {
     const buscaLower = busca.toLowerCase();
 
