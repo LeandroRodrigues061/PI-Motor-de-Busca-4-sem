@@ -14,6 +14,7 @@ export default function Perfil() {
 
   const [busca, setBusca] = useState("");
   const [imoveisPesquisados, setImoveisPesquisados] = useState(imoveis);
+  
   useEffect(() => {
     const buscaLower = busca.toLowerCase();
 

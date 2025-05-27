@@ -24,7 +24,6 @@ export default function Login() {
     setMode("login");
   };
 
-  // Login
   const handleLogin = async () => {
     try {
       const res = await fetch("/api/auth/login", {
@@ -45,8 +44,6 @@ export default function Login() {
       console.error(error);
     }
   };
-
-  // Email existente? para liberar campos de nova senha
 
   const checkEmail = async () => {
     try {
@@ -84,11 +81,9 @@ export default function Login() {
     // IMPLEMENTAÇÃO DO BACKEND
   };
 
-  // Voltar para login mode
   const back = () => {
     setMode("login");
   };
-  // fechar modal
   const closeModal = () => {
     setIsPasswordChecked(false);
   };
