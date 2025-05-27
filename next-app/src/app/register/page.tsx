@@ -48,7 +48,7 @@ export default function Cadastro(){
 
       if (response.ok) {
         toast.success(data.message);
-        router.push("/");
+        return router.push("/");
       } 
       toast.error(data.message || "Erro ao cadastrar");
     } catch (error) {
