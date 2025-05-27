@@ -63,21 +63,20 @@ def extrair_dados():
         except:
             valor_inicial = "N/A"
 
-        for card in cards:
-            try:
-                link = card.get_attribute("href")
+        try:
+            link = card.get_attribute("href")
 
-                if not link or link == "#":
-                    print("⚠️ Link vazio ou inválido encontrado.")
-                    continue
+            if not link or link == "#":
+                print("⚠️ Link vazio ou inválido encontrado.")
+                continue
 
-                if not link.startswith("http"):
-                    link = "https://vitrinebradesco.com.br" + link
+            if not link.startswith("http"):
+                link = "https://vitrinebradesco.com.br" + link
 
-                links.append(link)
+            links.append(link)
 
-            except Exception as e:
-                print(f"❌ Erro ao extrair link para o card: {e}")
+        except Exception as e:
+            print(f"❌ Erro ao extrair link para o card: {e}")
 
 
         dados.append({
@@ -133,5 +132,5 @@ def salvar_em_mongodb(imoveis, nome_collection):
 if __name__ == "__main__":
     imoveis = extrair_dados()
     salvar_em_mongodb(imoveis, "imoveis_bradesco")
-driver.quit()
+    driver.quit()
 
