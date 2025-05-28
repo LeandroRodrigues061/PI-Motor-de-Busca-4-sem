@@ -178,7 +178,7 @@ def salvar_em_mongodb(imoveis, nome_collection):
 
     for imovel in imoveis:
         if not imovel.get("url"):
-            continue  # Ignora se não tiver URL
+            continue  
 
         result = collection.update_one(
             {"url": imovel["url"]},  
