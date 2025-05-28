@@ -17,6 +17,7 @@ export default function Cadastro(){
   const [confirmPassword, setConfirmPassword] = useState("")
   const [type, setType] = useState("password");
   const [isEyeOpen, setIsEyeOpen] = useState(false);
+
   const toggleEye = () => {
     if (isEyeOpen) {
       setType("password");
@@ -26,13 +27,35 @@ export default function Cadastro(){
       setIsEyeOpen(true);
     }
   };
-  const handleRegister = () => {
-      if(password !== confirmPassword) 
-        return toast.error("As senhas não coincidem, tente novamente!");
 
-      toast.success("Cadastro realizado com sucesso ")
-      router.push("/");
-  }
+  const handleRegister = async () => {
+    try {
+      const userData={
+        nome,
+        cargo,
+        email,
+        password,
+        confirmPassword
+      }
+      
+    const response = await fetch("/api/auth/cadastro", {
+      method: "POST", // Define o método como POST
+      headers: {
+        "Content-Type": "application/json", // Define o tipo de conteúdo como JSON
+      },
+      body: JSON.stringify(userData), // Envia os dados no corpo da requisição
+    });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+        return router.push("/");
+      } 
+      toast.error(data.message || "Erro ao cadastrar");
+    } catch (error) {
+      console.error("Faltaram dados:", error);
+    }
+  };
 
   return(
     <>

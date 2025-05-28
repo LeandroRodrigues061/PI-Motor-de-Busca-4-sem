@@ -6,6 +6,10 @@ scripts = [
     # 'testeautomacaoSantander.py' 
     'Scraping_Itau.py'
 
+    # 'Scraping_Itau.py',
+    # 'Scraping.py',
+    # 'testeautomacaoCaixa.py',
+     'testeautomacaoSantander.py'
 ]
 
 for script in scripts:
