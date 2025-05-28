@@ -32,7 +32,7 @@ services:
         condition: service_started
         required: true
     environment:
-      MONGO_URI: mongodb://root:example@mongo:27018/MotorDeBusca?authSource=admin
+      MONGO_URI: mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin
     ports:
       - target: 3000
         published: "3000"
