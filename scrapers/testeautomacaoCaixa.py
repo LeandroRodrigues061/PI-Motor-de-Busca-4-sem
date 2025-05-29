@@ -3,13 +3,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
 from pymongo import MongoClient, errors
 import time
-import tempfile
 import re
 
-# Conectar ao MongoDB
+
 try:
     client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
     db = client["MotorDeBusca"]
@@ -24,28 +22,25 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     import time
     from bs4 import BeautifulSoup
 
-    time.sleep(2)  # Aguarda o carregamento da página
+
+    time.sleep(2)  
     soup = BeautifulSoup(driver.page_source, "html.parser")
     detalhes = {}
 
-    # Título do imóvel (ex: "VILA AUSTRIA")
     titulo = None
     h5 = soup.find("h5")
     if h5:
         titulo = h5.text.strip()
     detalhes["titulo"] = titulo
 
-    # Endereço completo
     endereco = None
     endereco_match = re.search(r"Endere[cç]o:\s*(.+)", soup.text)
     if endereco_match:
         endereco = endereco_match.group(1).strip()
     detalhes["endereco"] = endereco
 
-    # Bairro (tenta extrair do endereço)
     bairro = None
     if endereco:
-        # Procura padrão " - BAIRRO - CEP:" ou " - BAIRRO - CEP"
         bairro_match = re.search(r",\s*([^,]+)\s*-\s*CEP", endereco)
         if bairro_match:
             bairro = bairro_match.group(1).strip()
@@ -54,35 +49,30 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     detalhes["cidade"] = "São Paulo"
     detalhes["uf"] = "SP"
 
-    # Valor de avaliação
     valor_avaliacao = None
     match = re.search(r"Valor de avaliação:\s*R\$ [\d\.,]+", soup.text)
     if match:
         valor_avaliacao = match.group(0).split(":", 1)[-1].strip()
     detalhes["valor_avaliacao"] = valor_avaliacao
 
-    # Valor mínimo de venda 1º Leilão
     valor_minimo_1 = None
     match = re.search(r"Valor mínimo de venda 1º Leilão:\s*R\$ [\d\.,]+", soup.text)
     if match:
         valor_minimo_1 = match.group(0).split(":", 1)[-1].strip()
     detalhes["valor_minimo_1_leilao"] = valor_minimo_1
 
-    # Valor mínimo de venda 2º Leilão
     valor_minimo_2 = None
     match = re.search(r"Valor mínimo de venda 2º Leilão:\s*R\$ [\d\.,]+", soup.text)
     if match:
         valor_minimo_2 = match.group(0).split(":", 1)[-1].strip()
     detalhes["valor_minimo_2_leilao"] = valor_minimo_2
 
-    # Datas dos leilões
     datas = []
     for span in soup.find_all("span"):
         if "Data do 1º Leilão" in span.text or "Data do 2º Leilão" in span.text:
             datas.append(span.text.strip())
     detalhes["datas_leiloes"] = datas
 
-    # Formas de pagamento
     formas_pagamento = []
     pagamento_section = None
     for p in soup.find_all("p"):
@@ -126,7 +116,6 @@ def coletar_lista_imoveis(driver):
                     })
             except Exception as e:
                 print("Erro ao coletar imóvel:", e)
-        # Paginação
         try:
             paginacao = driver.find_element(By.ID, "paginacao")
             links = paginacao.find_elements(By.TAG_NAME, "a")
@@ -152,18 +141,15 @@ def coletar_lista_imoveis(driver):
 def navegar_ate_imovel(driver, estado, cidade, pagina, indice):
     wait = WebDriverWait(driver, 20)
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
-    # Seleciona Estado e Cidade
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text(estado)
     time.sleep(1)
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_cidade")))).select_by_visible_text(cidade)
     time.sleep(1)
-    # Avançar etapas
     wait.until(EC.element_to_be_clickable((By.ID, "btn_next0"))).click()
     time.sleep(1)
     wait.until(EC.element_to_be_clickable((By.ID, "btn_next1"))).click()
     time.sleep(2)
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
-    # Avançar até a página correta
     for _ in range(1, pagina):
         paginacao = driver.find_element(By.ID, "paginacao")
         links = paginacao.find_elements(By.TAG_NAME, "a")
@@ -176,7 +162,6 @@ def navegar_ate_imovel(driver, estado, cidade, pagina, indice):
             driver.execute_script("arguments[0].click();", proximo_link)
             time.sleep(3)
             wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
-    # Retorna o div do imóvel desejado
     imoveis_divs = driver.find_elements(By.CLASS_NAME, "group-block-item")
     return imoveis_divs[indice]
 
@@ -199,12 +184,18 @@ def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("⚠️ Nenhum dado para salvar no MongoDB.")
         return
-    try:
-        collection = db[nome_collection]
-        result = collection.insert_many(imoveis)
-        print(f"✅ {len(imoveis)} imóveis salvos no MongoDB.")
-    except Exception as e:
-        print("❌ Erro ao salvar no MongoDB:", e)
+
+    collection = db[nome_collection]
+
+    for imovel in imoveis:
+
+        try:
+
+            collection = db[nome_collection]
+            result = collection.insert_many(imoveis)
+            print(f"✅ {len(imoveis)} imóveis salvos no MongoDB.")
+        except Exception as e:
+            print("❌ Erro ao salvar no MongoDB:", e)
 
 if __name__ == "__main__":
     options = Options()
@@ -217,7 +208,6 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
-    # Faça a primeira busca normalmente
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text("SP")
     time.sleep(1)
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_cidade")))).select_by_visible_text("SAO PAULO")
@@ -230,10 +220,8 @@ if __name__ == "__main__":
     wait.until(EC.element_to_be_clickable((By.ID, "btn_next1"))).click()
     time.sleep(2)
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
-    # Coleta a lista de imóveis
     lista_imoveis = coletar_lista_imoveis(driver)
     print(f"Total de imóveis encontrados: {len(lista_imoveis)}")
-    # Processa cada imóvel reaplicando os filtros
     imoveis = processar_todos_imoveis_por_link(driver, lista_imoveis)
     salvar_em_mongodb(imoveis, "imoveis_caixa")
     driver.quit()

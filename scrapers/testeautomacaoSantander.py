@@ -27,12 +27,11 @@ def extrair_dados_imoveis(html):
     soup = BeautifulSoup(html, 'html.parser')
     cards = soup.find_all('a', class_='card')
 
-    def get_text_safe(el):
-        return el.get_text(strip=True) if el else None
-
     imoveis = []
     for card in cards:
         card_data = {}
+
+        card_data['Banco'] = 'Santander'
 
         header = card.find('a', class_='card-header')
         body = card.find('div', class_='card-body')
@@ -52,35 +51,49 @@ def extrair_dados_imoveis(html):
         svg = header.find('svg') if header else None
         card_data['endereco'] = svg.find_next_sibling(string=True).strip() if svg else None
 
-        card_data['valor_atual'] = None
-        if body:
-            valor_atual_el = body.select_one('.card-valor-atual')
-            if valor_atual_el:
-                porcento = valor_atual_el.find('p', class_='card-porcento')
-                if porcento:
-                    porcento.decompose()
-                card_data['valor_atual'] = valor_atual_el.get_text(strip=True)
-            else:
-                card_data['valor_atual'] = None
-        
-        # valor_ant = body.find('div', class_='card-valor-ant') if body else None
-        # valor_atual = body.find('div', class_='card-valor-atual') if body else None
-        # card_data['valor_anterior'] = get_text_safe(valor_ant)
-        # card_data['valor_atual'] = get_text_safe(valor_atual)
 
-        cod = body.find('small') if body else None
-        card_data['codigo'] = get_text_safe(cod)
+        div = card.find("div", class_='card-title')
+        if div:
+            title_text = div.get_text(separator=" ", strip=True)
+            # Valor anterior
+            valor_ant = None
+            m = re.search(r"De R\$\s*([\d\.]+)", title_text)
+            if m:
+                valor_ant = m.group(1)
+            card_data['valor_anterior'] = valor_ant
 
-        data_info = body.find('div', class_='card-data') if body else None
-        if data_info:
-            data_hora = data_info.find_all('strong')
-            if len(data_hora) >= 2:
-                card_data['data'] = get_text_safe(data_hora[0])
-                card_data['hora'] = get_text_safe(data_hora[1])
+            # Valor atual
+            valor_atual = None
+            m = re.search(r"A partir de\s*R\$\s*([\d\.]+)", title_text)
+            if m:
+                valor_atual = m.group(1)
             else:
-                card_data['data'] = card_data['hora'] = None
+                valores = re.findall(r"R\$\s*([\d\.]+)", title_text)
+                if len(valores) >= 2:
+                    valor_atual = valores[1]
+            card_data['valor_atual'] = valor_atual
+            
+            m = re.search(r"Cód\.?\s*[:\.]?\s*([\w\.-]+)", title_text)
+            card_data['codigo'] = m.group(1) if m else None
         else:
-            card_data['data'] = card_data['hora'] = None
+            card_data['valor_anterior'] = None
+            card_data['valor_atual'] = None
+            
+        div_data = card.find("div", class_='card-data')
+        if div_data:
+            data_text = div_data.get_text(strip=True)
+            data = None
+            m = re.search(r"Data do Leilão:([0-9]{2}/[0-9]{2}/[0-9]{4})", data_text)
+            if m:
+                data = m.group(1)
+            card_data['data'] = data        
+
+        bairro = None
+        bairro_text = card_data.get('endereco')
+        m = re.search(r",\s*(\d+|S/?N)\s+([^,]+),", bairro_text, re.IGNORECASE) 
+        if m:
+            bairro = m.group(2).strip()
+        card_data['bairro'] = bairro
 
         if footer:
             textos = footer.find_all('p')
@@ -154,11 +167,37 @@ def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("Nenhum dado para salvar no MongoDB.")
         return
+
     collection = db[nome_collection]
-    collection.insert_many(imoveis)
-    print(f"{len(imoveis)} documentos inseridos na collection '{nome_collection}'.")
+
+    # Garante que 'url' seja único
+    collection.create_index("url", unique=True)
+
+    novos = 0
+    atualizados = 0
+
+    for imovel in imoveis:
+        if not imovel.get("url"):
+            continue  
+
+        result = collection.update_one(
+            {"url": imovel["url"]},  
+            {"$set": imovel},        
+            upsert=True              
+        )
+
+        if result.upserted_id:
+            novos += 1
+        elif result.modified_count > 0:
+            atualizados += 1
+
+    print(f"{novos} novos imóveis inseridos na collection '{nome_collection}'.")
+    print(f"{atualizados} imóveis atualizados.")
 
 if __name__ == "__main__":
-    dados = extrair_imoveis_com_paginacao()
-    print(f"\nTotal de imóveis extraídos: {len(dados)}")
-    salvar_em_mongodb(dados, "imoveis_santander")
+    imoveis_extraidos = extrair_imoveis_com_paginacao()
+    print(f"🔍 Total de imóveis extraídos: {len(imoveis_extraidos)}")
+    salvar_em_mongodb(imoveis_extraidos, "imoveis_santander")
+
+    
+
