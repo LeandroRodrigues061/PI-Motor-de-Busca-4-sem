@@ -31,6 +31,8 @@ def extrair_dados_imoveis(html):
     for card in cards:
         card_data = {}
 
+        card_data['Banco'] = 'Santander'
+
         header = card.find('a', class_='card-header')
         body = card.find('div', class_='card-body')
         footer = card.find('div', class_='card-footer')
@@ -48,6 +50,7 @@ def extrair_dados_imoveis(html):
 
         svg = header.find('svg') if header else None
         card_data['endereco'] = svg.find_next_sibling(string=True).strip() if svg else None
+
 
         div = card.find("div", class_='card-title')
         if div:
@@ -164,11 +167,37 @@ def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("Nenhum dado para salvar no MongoDB.")
         return
+
     collection = db[nome_collection]
-    collection.insert_many(imoveis)
-    print(f"{len(imoveis)} documentos inseridos na collection '{nome_collection}'.")
+
+    # Garante que 'url' seja único
+    collection.create_index("url", unique=True)
+
+    novos = 0
+    atualizados = 0
+
+    for imovel in imoveis:
+        if not imovel.get("url"):
+            continue  
+
+        result = collection.update_one(
+            {"url": imovel["url"]},  
+            {"$set": imovel},        
+            upsert=True              
+        )
+
+        if result.upserted_id:
+            novos += 1
+        elif result.modified_count > 0:
+            atualizados += 1
+
+    print(f"{novos} novos imóveis inseridos na collection '{nome_collection}'.")
+    print(f"{atualizados} imóveis atualizados.")
 
 if __name__ == "__main__":
-    dados = extrair_imoveis_com_paginacao()
-    print(f"\nTotal de imóveis extraídos: {len(dados)}")
-    salvar_em_mongodb(dados, "imoveis_santander")
+    imoveis_extraidos = extrair_imoveis_com_paginacao()
+    print(f"🔍 Total de imóveis extraídos: {len(imoveis_extraidos)}")
+    salvar_em_mongodb(imoveis_extraidos, "imoveis_santander")
+
+    
+

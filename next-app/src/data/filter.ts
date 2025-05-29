@@ -1,11 +1,25 @@
 import { dbConnect } from "@/lib/mongodb";
 import  Imovel  from "@/data/models/Imovel";
 
+interface Query {
+  estado?: string;
+  cidade?: string;
+  bairros?: { $in: string[]};
+  tipoImovel?: string;
+  valorAvaliacao?: {
+    $lt?: number;
+    $gt?: number;
+    $gte?: number;
+    $lte?: number;
+  };
+  banco?: { $in: string[]};
+}
+
 // Função para buscar imóveis do banco de dados com base nos filtros
 export async function getImoveisFromDatabase(filtros: any) {
   await dbConnect(); // Garante que o banco está conectado
 
-  const query: any = {};
+  const query: Query = {};
 
   if (filtros.estado) {
     query.estado = filtros.estado;
@@ -15,9 +29,9 @@ export async function getImoveisFromDatabase(filtros: any) {
     query.cidade = filtros.cidade;
   }
 
-  // if (filtros.bairros.length > 0) {
-  //   query.bairro = { $in: filtros.bairros };
-  // }
+  if (filtros.bairros.length > 0) {
+    query.bairros = { $in: filtros.bairros };
+  }
 
   if (filtros.tipoImovel.toLowerCase() !== "indiferente") {
     query.tipoImovel = filtros.tipoImovel;

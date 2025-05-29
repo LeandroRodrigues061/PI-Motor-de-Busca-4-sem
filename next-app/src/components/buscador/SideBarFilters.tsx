@@ -1,30 +1,30 @@
 "use client";
 import { useFiltro } from "@/context/FilterContext";
 import { useState } from "react";
-import estados from "@/data/constants/Estados";
-import Estado from "@/data/models/Estado";
 import { Button } from "../Button";
-import bancos from "@/data/constants/Bancos"
+import bancos from "@/data/constants/Bancos";
+import estados from "@/data/constants/Estados";
+
 interface Cidade {
   nome: string;
   bairros: string[];
 }
 
 export default function SidebarFilters() {
-  const { setFiltros } = useFiltro();
-
-  const [estadoSelecionado, setEstadoSelecionado] = useState<Estado | null>(
-    null
-  );
+  const { setFiltros, filtrarImoveis } = useFiltro();
+  const [estadoSelecionado, setEstadoSelecionado] = useState<any | null>(null);
   const [cidadeSelecionada, setCidadeSelecionada] = useState<string | null>(
     null
   );
   const [bairrosSelecionados, setBairrosSelecionados] = useState<string[]>([]);
   const [tipoImovel, setTipoImovel] = useState<string>("indiferente");
   const [valor, setValor] = useState<string>("");
-  const [bancosSelecionados, setBancosSelecionados] = useState<string[]>([])
+  const [bancosSelecionados, setBancosSelecionados] = useState<string[]>([]);
+
+  // Obtém as cidades disponíveis com base no estado selecionado
   const cidadesDisponiveis: Cidade[] = estadoSelecionado?.cidade || [];
 
+  // Obtém os bairros disponíveis com base na cidade selecionada
   const bairrosDisponiveis: string[] =
     cidadesDisponiveis.find((c: Cidade) => c.nome === cidadeSelecionada)
       ?.bairros || [];
@@ -35,6 +35,20 @@ export default function SidebarFilters() {
         ? prev.filter((b: string) => b !== bairro)
         : [...prev, bairro]
     );
+  };
+
+  const handleBuscar = async () => {
+    setFiltros({
+      estado: estadoSelecionado?.name || null,
+      cidade: cidadeSelecionada,
+      bairros: bairrosSelecionados,
+      tipoImovel,
+      valor,
+      banco: bancosSelecionados,
+    });
+
+    const imoveis = await filtrarImoveis();
+    console.log("Imóveis filtrados:", imoveis);
   };
 
   return (
@@ -52,7 +66,7 @@ export default function SidebarFilters() {
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               const estado =
                 estados.find(
-                  (estado: Estado) => estado.id === Number(e.target.value)
+                  (estado: any) => estado.id === Number(e.target.value)
                 ) || null;
               setEstadoSelecionado(estado);
               setCidadeSelecionada(null);
@@ -60,7 +74,7 @@ export default function SidebarFilters() {
             }}
           >
             <option value="">Selecione o estado</option>
-            {estados.map((estado: Estado) => (
+            {estados.map((estado: any) => (
               <option key={estado.id} value={estado.id}>
                 {estado.name}
               </option>
@@ -91,7 +105,7 @@ export default function SidebarFilters() {
           </select>
         </div>
 
-        {/* Bairros (checkbox múltiplo) */}
+        {/* Bairros */}
         {cidadeSelecionada && (
           <div className="flex flex-col gap-1">
             <h2 className="text-xl font-semibold text-zinc-900">Bairro</h2>
@@ -132,7 +146,8 @@ export default function SidebarFilters() {
             <option value="outros">Outros</option>
           </select>
         </div>
-        {/* faixa de valor */}
+
+        {/* Faixa de Valor */}
         <div className="flex flex-col gap-2">
           <label className="font-semibold text-xl text-zinc-900">
             Faixa de valor
@@ -145,7 +160,9 @@ export default function SidebarFilters() {
               !estadoSelecionado ? "cursor-no-drop " : ""
             }`}
           >
-            <option className="text-xl" value="">Não especificado</option>
+            <option className="text-xl" value="">
+              Não especificado
+            </option>
             <option value="<100000">Até R$ 100.000,00</option>
             <option value="100001-200000">
               R$ 100.000,01 - R$ 200.000,00{" "}
@@ -160,46 +177,33 @@ export default function SidebarFilters() {
           </select>
         </div>
       </div>
+
+      {/* Bancos */}
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold text-zinc-900">Bancos</h2>
-      
-          {bancos.map((banco) => (
-            <label key={banco.id} className="flex gap-2">
-              <input 
-                type="checkbox" 
-                value={banco.name}
-                disabled={!estadoSelecionado}
-                checked={bancosSelecionados.includes(banco.name)}
-                onChange={() => {
-                  setBancosSelecionados((prev) =>
-                    prev.includes(banco.name)
-                      ? prev.filter((nome) => nome !== banco.name)
-                      : [...prev, banco.name]
-                  );
-                }}
-              />
-              {banco.name.charAt(0).toUpperCase() + banco.name.slice(1)}
-            </label>
-          ))}
-        
+        {bancos.map((banco) => (
+          <label key={banco.id} className="flex gap-2">
+            <input
+              type="checkbox"
+              value={banco.name}
+              disabled={!estadoSelecionado}
+              checked={bancosSelecionados.includes(banco.name)}
+              onChange={() => {
+                setBancosSelecionados((prev) =>
+                  prev.includes(banco.name)
+                    ? prev.filter((nome) => nome !== banco.name)
+                    : [...prev, banco.name]
+                );
+              }}
+            />
+            {banco.name.charAt(0).toUpperCase() + banco.name.slice(1)}
+          </label>
+        ))}
       </div>
 
       <span className="w-full h-[0.5px] mt-6 mb-2 rounded-2xl bg-zinc-300"></span>
 
-      <Button
-        variant="primary"
-        size="full"
-        onClick={() => {
-          setFiltros({
-            estado: estadoSelecionado,
-            cidade: cidadeSelecionada,
-            bairros: bairrosSelecionados,
-            tipoImovel,
-            valor,
-            banco: bancosSelecionados
-          });
-        }}
-      >
+      <Button variant="primary" size="full" onClick={handleBuscar}>
         <p className="font-semibold">Buscar</p>
       </Button>
     </aside>

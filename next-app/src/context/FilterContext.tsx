@@ -1,6 +1,8 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState } from "react";
+import { ReactNode } from "react";
 import { Imovel } from "@/data/models/Imovel";
+import estados from "@/data/constants/Estados";
 
 interface Filtros {
   estado: string | null;
@@ -11,18 +13,17 @@ interface Filtros {
   banco: string[];
 }
 
-// aqui ficam as funções e variáveis exportadas do contexto
 interface FiltroContextType {
   filtros: Filtros;
   setFiltros: (filtros: Filtros) => void;
-  filtrarImoveis: () => Promise<Imovel[]>; // Agora é uma função assíncrona
+  filtrarImoveis: () => Promise<Imovel[]>; // Função para buscar imóveis filtrados
 }
 
 const FiltroContext = createContext<FiltroContextType | undefined>(undefined);
 
 export const FiltroProvider = ({ children }: { children: ReactNode }) => {
   const [filtros, setFiltros] = useState<Filtros>({
-    estado: null,
+    estado: estados[0]?.name || null, // Estado padrão
     cidade: null,
     bairros: [],
     tipoImovel: "indiferente",
@@ -38,17 +39,17 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(filtros), // Envia os filtros para o backend
+        body: JSON.stringify(filtros), // Envia os filtros para a API
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao buscar imóveis do banco");
+        throw new Error("Erro ao buscar imóveis");
       }
 
-      const data: Imovel[] = await response.json();
+      const data = await response.json();
       return data; // Retorna os imóveis filtrados
     } catch (error) {
-      console.error("Erro ao filtrar imóveis:", error);
+      console.error("Erro ao buscar imóveis:", error);
       return [];
     }
   };
@@ -60,7 +61,7 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useFiltro = (): FiltroContextType => {
+export const useFiltro = () => {
   const context = useContext(FiltroContext);
   if (!context) {
     throw new Error("useFiltro deve ser usado dentro de um FiltroProvider");
