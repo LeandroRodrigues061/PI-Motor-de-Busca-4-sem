@@ -96,11 +96,18 @@ def extrair_detalhes_imovel(driver, numero_imovel):
                 formas_pagamento.append(texto.strip())
     detalhes["formas_pagamento"] = formas_pagamento
     
+    spans = soup.select("div.content span")
+
     tipo_imovel = None
-    for tipo in soup.find_all("p"):
-        if "Tipo de Imóvel:" in tipo.text:
-            tipo_imovel = tipo.text.split(":", 1)[-1].strip()
+    for span in spans:
+        if "Tipo de imóvel" in span.text:
+            strong = span.find("strong")
+            if strong:
+                tipo_imovel = strong.get_text(strip=True)
             break
+
+    detalhes["tipo_imovel"] = tipo_imovel
+
     detalhes["tipo_imovel"] = tipo_imovel
     
     detalhes["link"] = f"https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel={numero_imovel}"
