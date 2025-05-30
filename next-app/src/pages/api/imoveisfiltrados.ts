@@ -29,9 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
-      query.$expr = {
-        $eq: [{ $toDouble: "$valor_avaliacao" }, "$valor_avaliacao"]
-      };
+      // query.$expr = {
+      //   $eq: [{ $toDouble: "$valor_avaliacao" }, "$valor_avaliacao"]
+      // };
 
       if (banco && Array.isArray(banco) && banco.length > 0) {
         query.banco = { $in: banco };
