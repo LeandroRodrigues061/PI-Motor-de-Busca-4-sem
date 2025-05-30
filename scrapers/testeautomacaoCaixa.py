@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from pymongo import MongoClient, errors
 import time
+import unicodedata
 import re
 
 
@@ -17,11 +18,33 @@ except errors.ServerSelectionTimeoutError as err:
     print("❌ Erro ao conectar ao MongoDB:", err)
     exit(1)
 
+def padronizar_bairro(bairro):
+    if not bairro:
+        return None
+    bairro = bairro.strip()
+    bairro = bairro.upper()
+    bairro = ''.join(
+        c for c in unicodedata.normalize('NFD', bairro)
+        if unicodedata.category(c) != 'Mn'
+    )
+    bairro = re.sub(r'\s+', ' ', bairro)
+    bairro = bairro.replace('JD ', 'JARDIM ')
+    bairro = bairro.replace('JD. ', 'JARDIM ')
+    bairro = bairro.replace('VL ', 'VILA ')
+    bairro = bairro.replace('VL. ', 'VILA ')
+    bairro = bairro.replace('PQ ', 'PARQUE ')
+    bairro = bairro.replace('PQ. ', 'PARQUE ')
+    bairro = bairro.replace('DIST ', 'DISTRITO ')
+    bairro = bairro.replace('S ', 'SÃO ')
+    bairro = bairro.replace('PAULIS', 'PAULISTA ')
+    bairro
+    bairro = bairro.rstrip('.,-')
+    return bairro
+
 def extrair_detalhes_imovel(driver, numero_imovel):
     import re
     import time
     from bs4 import BeautifulSoup
-
 
     time.sleep(2)  
     soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -46,6 +69,8 @@ def extrair_detalhes_imovel(driver, numero_imovel):
         if bairro_match:
             bairro = bairro_match.group(1).strip()
     detalhes["bairro"] = bairro
+    bairro_original = detalhes.get('bairro')
+    detalhes['bairro'] = padronizar_bairro(bairro_original) if bairro_original else None
 
     detalhes["cidade"] = "São Paulo"
     detalhes["uf"] = "SP"
