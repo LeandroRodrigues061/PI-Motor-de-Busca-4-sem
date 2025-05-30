@@ -1,14 +1,9 @@
 "use client";
 import { useFiltro } from "@/context/FilterContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../Button";
 import bancos from "@/data/constants/Bancos";
 import estados from "@/data/constants/Estados";
-
-interface Cidade {
-  nome: string;
-  bairros: string[];
-}
 
 export default function SidebarFilters() {
   const { setFiltros, filtrarImoveis } = useFiltro();
@@ -20,14 +15,8 @@ export default function SidebarFilters() {
   const [tipoImovel, setTipoImovel] = useState<string>("indiferente");
   const [valor, setValor] = useState<string>("");
   const [bancosSelecionados, setBancosSelecionados] = useState<string[]>([]);
-
-  // Obtém as cidades disponíveis com base no estado selecionado
-  const cidadesDisponiveis: Cidade[] = estadoSelecionado?.cidade || [];
-
-  // Obtém os bairros disponíveis com base na cidade selecionada
-  const bairrosDisponiveis: string[] =
-    cidadesDisponiveis.find((c: Cidade) => c.nome === cidadeSelecionada)
-      ?.bairros || [];
+  const cidadesDisponiveis: { nome: string }[] = estadoSelecionado?.cidade || [];
+  const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([]);
 
   const toggleBairro = (bairro: string) => {
     setBairrosSelecionados((prev: string[]) =>
@@ -46,10 +35,52 @@ export default function SidebarFilters() {
       valor,
       banco: bancosSelecionados,
     });
-
-    const imoveis = await filtrarImoveis();
-    console.log("Imóveis filtrados:", imoveis);
+  
+    try {
+      const response = await fetch("/api/imoveisfiltrados", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          estado: estadoSelecionado?.name || null,
+          cidade: cidadeSelecionada,
+          bairros: bairrosSelecionados,
+          tipoImovel,
+          valor,
+          banco: bancosSelecionados,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar imóveis: ${response.statusText}`);
+      }
+  
+      const imoveis = await response.json();
+      console.log("Imóveis filtrados:", imoveis);
+    } catch (error) {
+      console.error("Erro ao buscar imóveis:", error);
+    }
   };
+
+  useEffect(() => {
+    const fetchBairros = async () => {
+      if (!cidadeSelecionada) {
+        setBairrosDisponiveis([]);
+        return;
+      }
+  
+      try {
+        const res = await fetch(`/api/bairros?cidade=${cidadeSelecionada}`);
+        const data = await res.json();
+        setBairrosDisponiveis(data.bairros || []);
+      } catch (error) {
+        console.error("Erro ao carregar bairros:", error);
+      }
+    };
+  
+    fetchBairros();
+  }, [cidadeSelecionada]);
 
   return (
     <aside className="w-[340px] min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
@@ -87,19 +118,16 @@ export default function SidebarFilters() {
           <h2 className="text-xl font-semibold text-zinc-900">Cidade</h2>
           <select
             value={cidadeSelecionada || ""}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              setCidadeSelecionada(e.target.value);
-              setBairrosSelecionados([]);
-            }}
+            onChange={(e) => setCidadeSelecionada(e.target.value)}
             disabled={!estadoSelecionado}
             className={`border rounded-xl p-2 text-zinc-600 ${
               !estadoSelecionado ? "cursor-no-drop" : ""
             }`}
           >
-            <option value="">Selecione a cidade</option>
-            {cidadesDisponiveis.map((cidade: Cidade) => (
-              <option key={cidade.nome} value={cidade.nome}>
-                {cidade.nome}
+            <option value="">Selecione uma cidade</option>
+            {cidadesDisponiveis.map((cidadeObj, index) => (
+              <option key={index} value={cidadeObj.nome}>
+                {cidadeObj.nome}
               </option>
             ))}
           </select>

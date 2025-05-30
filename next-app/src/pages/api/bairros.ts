@@ -8,12 +8,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   try {
     await dbConnect();
-
-    const imoveis = await Imovel.find({});
-
-    return res.status(200).json(imoveis);
+    const bairros = await Imovel.distinct("bairro");
+    return res.status(200).json({ bairros });
   } catch (error) {
-    console.error('Erro ao buscar imóveis:', error);
+    console.error('Erro ao buscar bairros:', error);
     return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 }
