@@ -7,13 +7,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ message: 'Método não permitido' });
   }
   try {
-    // Conecta ao banco de dados
     await dbConnect();
 
-    // Busca todos os documentos da coleção usando o modelo do Mongoose
     const imoveis = await Imovel.find({});
 
-    // Retorna os documentos encontrados
     return res.status(200).json(imoveis);
   } catch (error) {
     console.error('Erro ao buscar imóveis:', error);

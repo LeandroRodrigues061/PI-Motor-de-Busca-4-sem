@@ -7,27 +7,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       await dbConnect();
 
-      const { estado, cidade, bairros, tipoImovel, valor, banco } = req.body;
+      const { estado, cidade, valor, banco } = req.body;
+
+      if(!estado && !cidade && !valor && banco.length === 0) {
+        return res.status(400).json({ message: "Pelo menos um filtro deve ser fornecido." });
+      }
 
       const query: any = {};
 
-      if (estado) query.estado = estado;
+      if (estado) query.uf = estado;
       if (cidade) query.cidade = cidade;
-      if (bairros.length > 0) query.bairro = { $in: bairros };
-      if (tipoImovel.toLowerCase() !== "indiferente") query.tipoImovel = tipoImovel;
 
       if (valor) {
         if (valor.startsWith("<")) {
-          query.valorAvaliacao = { $lt: Number(valor.replace("<", "")) };
+          query.valor_avaliacao = { $lt: Number(valor.replace("<", "")) };
         } else if (valor.startsWith(">")) {
-          query.valorAvaliacao = { $gt: Number(valor.replace(">", "")) };
+          query.valor_avaliacao = { $gt: Number(valor.replace(">", "")) };
         } else if (valor.includes("-")) {
           const [min, max] = valor.split("-").map(Number);
-          query.valorAvaliacao = { $gte: min, $lte: max };
+          query.valor_avaliacao = { $gte: min, $lte: max };
         }
       }
 
-      if (banco.length > 0) query.banco = { $in: banco };
+      query.$expr = {
+        $eq: [{ $toDouble: "$valor_avaliacao" }, "$valor_avaliacao"]
+      };
+
+      if (banco && Array.isArray(banco) && banco.length > 0) {
+        query.banco = { $in: banco };
+      }
 
       const imoveis = await Imovel.find(query).exec();
       res.status(200).json(imoveis);

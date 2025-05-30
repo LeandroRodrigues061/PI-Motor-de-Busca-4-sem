@@ -41,20 +41,22 @@ export default function ImovelCard(props: imovelProps) {
         </div>
       </div> */}
       <div className="flex gap-1">
-        {/* <p className="text-zinc-600">Data do leilão:</p>
-        <p className="text-zinc-800 font-semibold">{imovel.dataLeilao}</p> */}
+        <p className="text-zinc-600">Data do leilão:</p>
+        {imovel.datas_leiloes.map((data, index) => (
+        <span key={index}>{data}</span>
+        ))}
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Número do imóvel:</p>
-        <p className="text-zinc-800 font-semibold">{imovel.numeroImovel}</p>
+        <p className="text-zinc-800 font-semibold">{imovel.numero_imovel}</p>
       </div>  
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor de avaliação:</p>
-        <p className="text-zinc-800 font-semibold">R$ {imovel.valorAvaliacao}</p>
+        <p className="text-zinc-800 font-semibold">R$ {imovel.valor_avaliacao}</p>
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor mínimo de venda:</p>
-        {/* <p className="text-zinc-800 font-semibold">R$ {imovel.valorMinimoVenda.toLocaleString('pt-BR')}</p> */}
+        <p className="text-zinc-800 font-semibold">R$ {imovel.valor_minimo_1_leilao.toLocaleString('pt-BR')}</p>
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Endereço:</p>

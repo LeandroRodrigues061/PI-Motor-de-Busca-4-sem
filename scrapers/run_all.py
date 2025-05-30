@@ -2,9 +2,9 @@ import subprocess
 
 scripts = [
     # 'ScrapingBradesco.py',
-    # 'testeautomacaoCaixa.py',
-    'testeautomacaoSantander.py' 
-    # 'Scraping_Itau.py'
+    'testeautomacaoCaixa.py',
+    #'testeautomacaoSantander.py' 
+    # 'Scraping_Itau.py's
 ]
 
 for script in scripts:
