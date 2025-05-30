@@ -33,11 +33,12 @@ def extrair_detalhes_imovel(driver, numero_imovel):
         titulo = h5.text.strip()
     detalhes["titulo"] = titulo
 
-    endereco = None
-    endereco_match = re.search(r"Endere[cç]o:\s*(.+)", soup.text)
-    if endereco_match:
-        endereco = endereco_match.group(1).strip()
-    detalhes["endereco"] = endereco
+    for p in soup.find_all('p'):
+        strong = p.find('strong')
+        if strong and "Endereço" in strong.text:
+            endereco = p.get_text(separator="\n", strip = True).split("\n", 1)[-1]
+            detalhes["endereco"] = endereco
+            break
 
     bairro = None
     if endereco:
@@ -52,20 +53,23 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     valor_avaliacao = None
     match = re.search(r"Valor de avaliação:\s*R\$ [\d\.,]+", soup.text)
     if match:
-        valor_avaliacao = match.group(0).split(":", 1)[-1].strip()
-    detalhes["valor_avaliacao"] = valor_avaliacao
+        valor_avaliacao_str = match.group(0).split(":", 1)[-1].strip()
+        valor_avaliacao_num = float(valor_avaliacao_str.replace("R$", "").replace(".", "").replace(",", "."))
+    detalhes["valor_avaliacao"] = valor_avaliacao_num
 
     valor_minimo_1 = None
     match = re.search(r"Valor mínimo de venda 1º Leilão:\s*R\$ [\d\.,]+", soup.text)
     if match:
-        valor_minimo_1 = match.group(0).split(":", 1)[-1].strip()
-    detalhes["valor_minimo_1_leilao"] = valor_minimo_1
+        valor_minimo_1_str = match.group(0).split(":", 1)[-1].strip()
+        valor_minimo1_num = float(valor_minimo_1_str.replace("R$", "").replace(".", "").replace(",", "."))
+    detalhes["valor_minimo_1_leilao"] = valor_minimo1_num
 
     valor_minimo_2 = None
     match = re.search(r"Valor mínimo de venda 2º Leilão:\s*R\$ [\d\.,]+", soup.text)
     if match:
-        valor_minimo_2 = match.group(0).split(":", 1)[-1].strip()
-    detalhes["valor_minimo_2_leilao"] = valor_minimo_2
+        valor_minimo_2_str = match.group(0).split(":", 1)[-1].strip()
+        valor_minimo2_num = float(valor_minimo_2_str.replace("R$", "").replace(".", "").replace(",", "."))
+    detalhes["valor_minimo_2_leilao"] = valor_minimo2_num
 
     datas = []
     for span in soup.find_all("span"):
