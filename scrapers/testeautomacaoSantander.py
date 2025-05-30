@@ -8,6 +8,7 @@ import time
 import tempfile
 import re
 from datetime import datetime
+import unicodedata
 
 from pymongo import MongoClient
 
@@ -22,6 +23,29 @@ def parse_datetime(data_str, hora_str):
         return datetime.strptime(f"{data_str} {hora_str}", "%d/%m/%Y %Hh%M")
     except Exception:
         return None
+
+def padronizar_bairro(bairro):
+    if not bairro:
+        return None
+    bairro = bairro.strip()
+    bairro = bairro.upper()
+    bairro = ''.join(
+        c for c in unicodedata.normalize('NFD', bairro)
+        if unicodedata.category(c) != 'Mn'
+    )
+    bairro = re.sub(r'\s+', ' ', bairro)
+    bairro = bairro.replace('JD ', 'JARDIM ')
+    bairro = bairro.replace('JD. ', 'JARDIM ')
+    bairro = bairro.replace('VL ', 'VILA ')
+    bairro = bairro.replace('VL. ', 'VILA ')
+    bairro = bairro.replace('PQ ', 'PARQUE ')
+    bairro = bairro.replace('PQ. ', 'PARQUE ')
+    bairro = bairro.replace('DIST ', 'DISTRITO ')
+    bairro = bairro.replace('S ', 'SÃO ')
+    bairro = bairro.replace('PAULIS ', 'PAULISTA ')
+    bairro
+    bairro = bairro.rstrip('.,-')
+    return bairro
 
 def extrair_dados_imoveis(html):
     soup = BeautifulSoup(html, 'html.parser')
@@ -94,6 +118,8 @@ def extrair_dados_imoveis(html):
         if m:
             bairro = m.group(2).strip()
         card_data['bairro'] = bairro
+        bairro_original = card_data.get('bairro')
+        card_data['bairro'] = padronizar_bairro(bairro_original) if bairro_original else None
 
         if footer:
             textos = footer.find_all('p')
