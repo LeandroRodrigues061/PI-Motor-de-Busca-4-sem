@@ -42,7 +42,7 @@ const ImovelSchema = new Schema({
   endereco: { type: String },
   dataImovel: { type: Date},
   favorito: { type: Boolean }, // Indica se o imóvel é favorito
-}, { collection: 'imoveis_caixa' }); // Associa explicitamente à coleção existente
+}, { collection: 'imoveis' }); // Associa explicitamente à coleção existente
 
 // Verifica se o modelo já existe para evitar recriação durante hot reload no Next.js
 const Imovel = models.Imovel || model('Imovel', ImovelSchema);

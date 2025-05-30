@@ -1,6 +1,6 @@
 "use client";
 import { useFiltro } from "@/context/FilterContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../Button";
 import bancos from "@/data/constants/Bancos";
 import estados from "@/data/constants/Estados";
@@ -16,6 +16,7 @@ export default function SidebarFilters() {
   const [valor, setValor] = useState<string>("");
   const [bancosSelecionados, setBancosSelecionados] = useState<string[]>([]);
   const cidadesDisponiveis: { nome: string }[] = estadoSelecionado?.cidade || [];
+  const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([]);
 
   const toggleBairro = (bairro: string) => {
     setBairrosSelecionados((prev: string[]) =>
@@ -61,6 +62,25 @@ export default function SidebarFilters() {
       console.error("Erro ao buscar imóveis:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchBairros = async () => {
+      if (!cidadeSelecionada) {
+        setBairrosDisponiveis([]);
+        return;
+      }
+  
+      try {
+        const res = await fetch(`/api/bairros?cidade=${cidadeSelecionada}`);
+        const data = await res.json();
+        setBairrosDisponiveis(data.bairros || []);
+      } catch (error) {
+        console.error("Erro ao carregar bairros:", error);
+      }
+    };
+  
+    fetchBairros();
+  }, [cidadeSelecionada]);
 
   return (
     <aside className="w-[340px] min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
