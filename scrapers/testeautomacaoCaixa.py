@@ -262,5 +262,5 @@ if __name__ == "__main__":
     lista_imoveis = coletar_lista_imoveis(driver)
     print(f"Total de imóveis encontrados: {len(lista_imoveis)}")
     imoveis = processar_todos_imoveis_por_link(driver, lista_imoveis)
-    salvar_em_mongodb(imoveis, "imoveis_caixa")
+    salvar_em_mongodb(imoveis, "imoveis")
     driver.quit()
