@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Button } from "../Button";
 import Field from "./Field";
 import Link from "next/link";
+import Logotipo from "../layout/Logotipo";
 
 export interface authFormProps {
   mode: string;
@@ -55,8 +56,11 @@ export default function AuthForm(props: authFormProps) {
   } = props;
 
   return (
-    <form className="w-[500px] flex flex-col items-center justify-center gap-5">
+    <form className="w-[300px] md:w-[400px] xl:w-[500px] flex flex-col items-center justify-center gap-5">
       <div className="w-full justify-center flex flex-col items-center gap-2">
+        <div className="pb-3 md:hidden">
+          <Logotipo />
+        </div>
         <h2 className="text-primary text-4xl font-semibold uppercase ">
           {mode === "login" ? "login" : "alterar senha"}
         </h2>

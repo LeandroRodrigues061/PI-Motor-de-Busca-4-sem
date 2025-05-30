@@ -7,6 +7,7 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Logotipo from "@/components/layout/Logotipo";
 
 export default function Cadastro(){
   const router = useRouter();
@@ -37,10 +38,13 @@ export default function Cadastro(){
   return(
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <div className="w-full h-screen grid grid-cols-2 bg-white">
+      <div className="w-full h-screen flex justify-center md:grid grid-cols-2 bg-white">
         <article className="flex flex-col items-center justify-center gap-6">
-          <form className="w-[500px] flex flex-col items-center justify-center gap-5">
+          <form className="w-[300px] md:w-[360px] xl:w-[500px] flex flex-col items-center justify-center gap-5">
             <div className="w-full justify-center flex flex-col items-center gap-2">
+               <div className="pb-3 md:hidden">
+                  <Logotipo />
+                </div>
               <h2 className="text-primary text-4xl font-semibold uppercase ">Cadastro</h2>
             </div>
             <Field title="Nome">
@@ -137,15 +141,15 @@ export default function Cadastro(){
           </form>
         </article>
         
-        <article className="flex flex-col items-center justify-center pb-40 bg-[url('/img/background-register.png')] bg-no-repeat bg-center">
-          <div className="flex flex-col justify-center items-center w-[500px] text-center">
+        <article className="hidden md:flex flex-col items-center justify-center pb-40 bg-[url('/img/background-register.png')] bg-no-repeat bg-center">
+          <div className="flex flex-col justify-center items-center md:w-[300px] lg:w-[400px] xl:w-[500px] text-center">
             <Image
               src="img/Logo.svg"
               alt="Logotipo"
               width={100}
               height={100}
             />
-            <h1 className="text-white font-semibold text-4xl mt-6">
+            <h1 className="text-white font-semibold text-2xl lg:text-4xl mt-6">
               <p>Bem-vindo ao nosso buscador de leilões!</p>
             </h1>
             <p className="text-zinc-200 text-lg mt-2">
