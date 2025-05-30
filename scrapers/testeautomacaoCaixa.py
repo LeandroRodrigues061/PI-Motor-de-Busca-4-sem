@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from pymongo import MongoClient, errors
 import time
+import unicodedata
 import re
 
 
@@ -17,11 +18,33 @@ except errors.ServerSelectionTimeoutError as err:
     print("❌ Erro ao conectar ao MongoDB:", err)
     exit(1)
 
+def padronizar_bairro(bairro):
+    if not bairro:
+        return None
+    bairro = bairro.strip()
+    bairro = bairro.upper()
+    bairro = ''.join(
+        c for c in unicodedata.normalize('NFD', bairro)
+        if unicodedata.category(c) != 'Mn'
+    )
+    bairro = re.sub(r'\s+', ' ', bairro)
+    bairro = bairro.replace('JD ', 'JARDIM ')
+    bairro = bairro.replace('JD. ', 'JARDIM ')
+    bairro = bairro.replace('VL ', 'VILA ')
+    bairro = bairro.replace('VL. ', 'VILA ')
+    bairro = bairro.replace('PQ ', 'PARQUE ')
+    bairro = bairro.replace('PQ. ', 'PARQUE ')
+    bairro = bairro.replace('DIST ', 'DISTRITO ')
+    bairro = bairro.replace('S ', 'SÃO ')
+    bairro = bairro.replace('PAULIS', 'PAULISTA ')
+    bairro
+    bairro = bairro.rstrip('.,-')
+    return bairro
+
 def extrair_detalhes_imovel(driver, numero_imovel):
     import re
     import time
     from bs4 import BeautifulSoup
-
 
     time.sleep(2)  
     soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -33,11 +56,12 @@ def extrair_detalhes_imovel(driver, numero_imovel):
         titulo = h5.text.strip()
     detalhes["titulo"] = titulo
 
-    endereco = None
-    endereco_match = re.search(r"Endere[cç]o:\s*(.+)", soup.text)
-    if endereco_match:
-        endereco = endereco_match.group(1).strip()
-    detalhes["endereco"] = endereco
+    for p in soup.find_all('p'):
+        strong = p.find('strong')
+        if strong and "Endereço" in strong.text:
+            endereco = p.get_text(separator="\n", strip = True).split("\n", 1)[-1]
+            detalhes["endereco"] = endereco
+            break
 
     bairro = None
     if endereco:
@@ -45,6 +69,8 @@ def extrair_detalhes_imovel(driver, numero_imovel):
         if bairro_match:
             bairro = bairro_match.group(1).strip()
     detalhes["bairro"] = bairro
+    bairro_original = detalhes.get('bairro')
+    detalhes['bairro'] = padronizar_bairro(bairro_original) if bairro_original else None
 
     detalhes["cidade"] = "São Paulo"
     detalhes["uf"] = "SP"
@@ -52,20 +78,23 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     valor_avaliacao = None
     match = re.search(r"Valor de avaliação:\s*R\$ [\d\.,]+", soup.text)
     if match:
-        valor_avaliacao = match.group(0).split(":", 1)[-1].strip()
-    detalhes["valor_avaliacao"] = valor_avaliacao
+        valor_avaliacao_str = match.group(0).split(":", 1)[-1].strip()
+        valor_avaliacao_num = float(valor_avaliacao_str.replace("R$", "").replace(".", "").replace(",", "."))
+    detalhes["valor_avaliacao"] = valor_avaliacao_num
 
     valor_minimo_1 = None
     match = re.search(r"Valor mínimo de venda 1º Leilão:\s*R\$ [\d\.,]+", soup.text)
     if match:
-        valor_minimo_1 = match.group(0).split(":", 1)[-1].strip()
-    detalhes["valor_minimo_1_leilao"] = valor_minimo_1
+        valor_minimo_1_str = match.group(0).split(":", 1)[-1].strip()
+        valor_minimo1_num = float(valor_minimo_1_str.replace("R$", "").replace(".", "").replace(",", "."))
+    detalhes["valor_minimo_1_leilao"] = valor_minimo1_num
 
     valor_minimo_2 = None
     match = re.search(r"Valor mínimo de venda 2º Leilão:\s*R\$ [\d\.,]+", soup.text)
     if match:
-        valor_minimo_2 = match.group(0).split(":", 1)[-1].strip()
-    detalhes["valor_minimo_2_leilao"] = valor_minimo_2
+        valor_minimo_2_str = match.group(0).split(":", 1)[-1].strip()
+        valor_minimo2_num = float(valor_minimo_2_str.replace("R$", "").replace(".", "").replace(",", "."))
+    detalhes["valor_minimo_2_leilao"] = valor_minimo2_num
 
     datas = []
     for span in soup.find_all("span"):
@@ -86,11 +115,18 @@ def extrair_detalhes_imovel(driver, numero_imovel):
                 formas_pagamento.append(texto.strip())
     detalhes["formas_pagamento"] = formas_pagamento
     
+    spans = soup.select("div.content span")
+
     tipo_imovel = None
-    for tipo in soup.find_all("p"):
-        if "Tipo de Imóvel:" in tipo.text:
-            tipo_imovel = tipo.text.split(":", 1)[-1].strip()
+    for span in spans:
+        if "Tipo de imóvel" in span.text:
+            strong = span.find("strong")
+            if strong:
+                tipo_imovel = strong.get_text(strip=True)
             break
+
+    detalhes["tipo_imovel"] = tipo_imovel
+
     detalhes["tipo_imovel"] = tipo_imovel
     
     detalhes["link"] = f"https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel={numero_imovel}"
@@ -251,5 +287,5 @@ if __name__ == "__main__":
     lista_imoveis = coletar_lista_imoveis(driver)
     print(f"Total de imóveis encontrados: {len(lista_imoveis)}")
     imoveis = processar_todos_imoveis_por_link(driver, lista_imoveis)
-    salvar_em_mongodb(imoveis, "imoveis_caixa")
+    salvar_em_mongodb(imoveis, "imoveis")
     driver.quit()
