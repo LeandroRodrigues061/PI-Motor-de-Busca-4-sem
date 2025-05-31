@@ -6,7 +6,7 @@ import bancos from "@/data/constants/Bancos";
 import estados from "@/data/constants/Estados";
 
 export default function SidebarFilters() {
-  const { setFiltros, filtrarImoveis } = useFiltro();
+  const { buscarComFiltros } = useFiltro();
   const [estadoSelecionado, setEstadoSelecionado] = useState<any | null>(null);
   const [cidadeSelecionada, setCidadeSelecionada] = useState<string | null>(
     null
@@ -18,69 +18,37 @@ export default function SidebarFilters() {
   const cidadesDisponiveis: { nome: string }[] = estadoSelecionado?.cidade || [];
   const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([]);
 
-  const toggleBairro = (bairro: string) => {
-    setBairrosSelecionados((prev: string[]) =>
-      prev.includes(bairro)
-        ? prev.filter((b: string) => b !== bairro)
-        : [...prev, bairro]
-    );
+  const fetchBairros = async () => {
+    const response = await fetch("/api/bairros");
+    const data = await response.json();
+    // data.bairros é o array de bairros
+    setBairrosDisponiveis(data.bairros);
   };
 
-  const handleBuscar = async () => {
-    setFiltros({
+  const toggleBairro = (bairro: string) => {
+    setBairrosSelecionados((prev: string[]) => {
+      const updatedBairros = prev.includes(bairro)
+        ? prev.filter((b: string) => b !== bairro)
+        : [...prev, bairro];
+      console.log("Bairros selecionados:", updatedBairros); // Log para depuração
+      return updatedBairros;
+    });
+  };
+
+  const handleBuscar = () => {
+    buscarComFiltros({
       estado: estadoSelecionado?.name || null,
       cidade: cidadeSelecionada,
-      bairros: bairrosSelecionados,
+      bairro: bairrosSelecionados,
       tipoImovel,
       valor,
       banco: bancosSelecionados,
     });
-  
-    try {
-      const response = await fetch("/api/imoveisfiltrados", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          estado: estadoSelecionado?.name || null,
-          cidade: cidadeSelecionada,
-          bairros: bairrosSelecionados,
-          tipoImovel,
-          valor,
-          banco: bancosSelecionados,
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar imóveis: ${response.statusText}`);
-      }
-  
-      const imoveis = await response.json();
-      console.log("Imóveis filtrados:", imoveis);
-    } catch (error) {
-      console.error("Erro ao buscar imóveis:", error);
-    }
   };
 
   useEffect(() => {
-    const fetchBairros = async () => {
-      if (!cidadeSelecionada) {
-        setBairrosDisponiveis([]);
-        return;
-      }
-  
-      try {
-        const res = await fetch(`/api/bairros?cidade=${cidadeSelecionada}`);
-        const data = await res.json();
-        setBairrosDisponiveis(data.bairros || []);
-      } catch (error) {
-        console.error("Erro ao carregar bairros:", error);
-      }
-    };
-  
-    fetchBairros();
-  }, [cidadeSelecionada]);
+      fetchBairros();
+  } , []);
 
   return (
     <aside className="w-[340px] min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
@@ -236,4 +204,4 @@ export default function SidebarFilters() {
       </Button>
     </aside>
   );
-}
+} 

@@ -6,15 +6,11 @@ services:
     container_name: mongo
     restart: always
     ports:
-      - target: 27017
-        published: "27018"
-        protocol: tcp
+      - "27018:27017"
     networks:
       - app-network
     volumes:
-      - type: volume
-        source: mongo-data
-        target: /data/db
+      - mongo-data:/data/db
       - ./next-app/scripts/init.js:/docker-entrypoint-initdb.d/init.js:ro
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
@@ -25,21 +21,17 @@ services:
       context: ./next-app
       dockerfile: DockerFile
     volumes:
-      - .:/app # Monta o diretório atual no contêiner
-      - /app/node_modules # Evita sobrescrever os node_modules do contêiner
+      - ./next-app:/next-app
+      - /next-app/node_modules
     depends_on:
-      mongo:
-        condition: service_started
-        required: true
+      - mongo
     environment:
       MONGO_URI: mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin
     ports:
-      - target: 3000
-        published: "3000"
-        protocol: tcp
+      - "3000:3000"
     networks:
       - app-network
-    command: npm run dev # Comando para rodar o servidor de desenvolvimento
+    command: npm run dev
 
   scrapers:
     build: ./scrapers

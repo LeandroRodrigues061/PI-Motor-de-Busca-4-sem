@@ -20,26 +20,11 @@ export default function ImovelCard(props: imovelProps) {
   
   
   return(
-    <div key={imovel._id} className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-start w-[900px] h-[280px] flex gap-6">
+    <div key={imovel._id} className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-start w-[900px] h-[320px] flex gap-8">
     <div className="relative rounded-xl w-72 h-52">
       <Image src={imovel.imagem} alt="imagem da casa" fill className="object-contain"/>
     </div>
     <div className="flex flex-col gap-[7px] w-full">
-      {/* <div className="flex gap-[6px] items-center">
-          <p className="text-zinc-600">Tempo restante:</p>
-        <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
-          <p className="text-white font-semibold">{tempoRestante.dias} dias</p>
-        </div>
-        <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
-          <p className="text-white font-semibold">{tempoRestante.horas} horas</p>
-        </div>
-        <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
-          <p className="text-white font-semibold">{tempoRestante.minutos} min</p>
-        </div>
-        <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
-          <p className="text-white font-semibold">{tempoRestante.segundos} seg</p>
-        </div>
-      </div> */}
       <div className="flex gap-1">
         <p className="text-zinc-600">Data do leilão:</p>
         {imovel.datas_leiloes.map((data, index) => (

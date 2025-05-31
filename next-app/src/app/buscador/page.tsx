@@ -5,29 +5,13 @@ import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
 import SubFiltros from "@/components/buscador/SubFiltros";
 import { Imovel } from "@/data/models/Imovel";
+import { useFiltro } from "@/context/FilterContext";
 
 export default function Buscador() {
-  const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [filter, setFilter] = useState<"valor" | "dataLeilao" | "tempoRestante" | null>(null);
+  const [filtros, setFiltros] = useState<any>({});
   const [crescente, setCrescente] = useState(false); // começa decrescente para mostrar os mais recentes
-
-  // Função para buscar os imóveis da API
-  const fetchImoveis = async () => {
-    try {
-      const response = await fetch("/api/imoveis"); // Substitua pelo endpoint correto
-      const data = await response.json();
-      console.log("dados adicionados")
-      setImoveis(data);
-      console.log(setImoveis) // Armazena os dados no estado
-    } catch (error) {
-      console.error("Erro ao buscar imóveis:", error);
-    }
-  };
-
-  // useEffect para buscar os imóveis ao carregar a página
-  useEffect(() => {
-    fetchImoveis();
-  }, []);
+  const { imoveis } = useFiltro();
 
   const handleFiltro = (tipo: typeof filter) => {
     if (filter === tipo) {
