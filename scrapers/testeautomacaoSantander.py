@@ -60,7 +60,7 @@ def extrair_dados_imoveis(html):
         header = card.find('a', class_='card-header')
         body = card.find('div', class_='card-body')
         footer = card.find('div', class_='card-footer')
-
+        
         card_data['url'] = header['href'] if header and header.has_attr('href') else None
 
         style = header.get('style', '') if header else ''
@@ -74,6 +74,13 @@ def extrair_dados_imoveis(html):
 
         svg = header.find('svg') if header else None
         card_data['endereco'] = svg.find_next_sibling(string=True).strip() if svg else None
+        
+        endereco_original = card_data.get('endereco', '')
+        m = re.match(r"([^,]+)", endereco_original)
+        if m:
+            titulo = m.group(1).strip()
+            card_data['titulo'] = titulo
+        
 
 
         div = card.find("div", class_='card-title')
@@ -84,7 +91,7 @@ def extrair_dados_imoveis(html):
             m = re.search(r"De R\$\s*([\d\.]+)", title_text)
             if m:
                 valor_ant = m.group(1)
-            card_data['valor_anterior'] = valor_ant
+            card_data['valor_avaliacao'] = valor_ant
 
             # Valor atual
             valor_atual = None
@@ -95,13 +102,13 @@ def extrair_dados_imoveis(html):
                 valores = re.findall(r"R\$\s*([\d\.]+)", title_text)
                 if len(valores) >= 2:
                     valor_atual = valores[1]
-            card_data['valor_atual'] = valor_atual
+            card_data['valor_minimo_1_leilao'] = valor_atual
             
             m = re.search(r"Cód\.?\s*[:\.]?\s*([\w\.-]+)", title_text)
             card_data['codigo'] = m.group(1) if m else None
         else:
-            card_data['valor_anterior'] = None
-            card_data['valor_atual'] = None
+            card_data['valor_avaliacao'] = None
+            card_data['valor_minimo_1_leilao'] = None
             
         div_data = card.find("div", class_='card-data')
         if div_data:
