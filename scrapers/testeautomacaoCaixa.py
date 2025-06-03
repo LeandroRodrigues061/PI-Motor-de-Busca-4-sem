@@ -7,7 +7,7 @@ from pymongo import MongoClient, errors
 import time
 import unicodedata
 import re
-
+from datetime import datetime
 
 try:
     client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
@@ -97,10 +97,22 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     detalhes["valor_minimo_2_leilao"] = valor_minimo2_num
 
     datas = []
+    datas_leiloes = []
     for span in soup.find_all("span"):
         if "Data do 1º Leilão" in span.text or "Data do 2º Leilão" in span.text:
-            datas.append(span.text.strip())
-    detalhes["datas_leiloes"] = datas
+            texto = span.text.strip()
+            m = re.search(r"(\d{2}/\d{2}/\d{4})\s*-\s*(\d{2}h\d{2})", texto)
+            if m:
+                data_str = m.group(1)
+                hora_str = m.group(2)
+                try:
+                    dt = datetime.strptime(f"{data_str} {hora_str}", "%d/%m/%Y %Hh%M")
+                    datas_leiloes.append(dt)
+                except Exception as e:
+                    print(f"Erro ao converter data: {e}")
+            else:
+                datas_leiloes.append(texto)  # Se não conseguir converter, salva o texto original
+    detalhes["datas_leiloes"] = datas_leiloes
 
     formas_pagamento = []
     pagamento_section = None
