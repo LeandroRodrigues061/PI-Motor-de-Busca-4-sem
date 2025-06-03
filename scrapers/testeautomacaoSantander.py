@@ -9,6 +9,7 @@ import tempfile
 import re
 from datetime import datetime
 import unicodedata
+from datetime import datetime
 
 from pymongo import MongoClient
 
@@ -78,9 +79,6 @@ def extrair_dados_imoveis(html):
         else:
             card_data['imagem'] = None
 
-        card_data['uf'] = 'SP'
-        card_data['cidade'] = 'São Paulo'
-        
         badge = header.find('span', class_='badge badge-dark') if header else None
         card_data['tipo_leilao'] = get_text_safe(badge)
 
@@ -119,17 +117,21 @@ def extrair_dados_imoveis(html):
         else:
             card_data['valor_avaliacao'] = None
             card_data['valor_minimo_1_leilao'] = None
-        
-        datas = []
+            
+        datas_leiloes = []   
         div_data = card.find("div", class_='card-data')
         if div_data:
             data_text = div_data.get_text(strip=True)
             data = None
             m = re.search(r"Data do Leilão:([0-9]{2}/[0-9]{2}/[0-9]{4})", data_text)
             if m:
-                data = m.group(1)
-                datas.append(data)
-            card_data['datas_leiloes'] = datas      
+                data_str = m.group(1)
+                try:
+                    data = datetime.strptime(data_str, "%d/%m/%Y")
+                    datas_leiloes.append(data)
+                except ValueError:
+                    data = None
+            card_data['datas_leiloes'] = datas_leiloes        
 
         bairro = None
         bairro_text = card_data.get('endereco')
@@ -139,6 +141,9 @@ def extrair_dados_imoveis(html):
         card_data['bairro'] = bairro
         bairro_original = card_data.get('bairro')
         card_data['bairro'] = padronizar_bairro(bairro_original) if bairro_original else None
+        card_data['uf'] = "SP"
+        card_data['cidade'] = "São Paulo"
+        card_data['favorito'] = False
 
         if footer:
             textos = footer.find_all('p')
@@ -216,17 +221,17 @@ def salvar_em_mongodb(imoveis, nome_collection):
     collection = db[nome_collection]
 
     # Garante que 'url' seja único
-    collection.create_index("url", unique=True)
+    collection.create_index("link", unique=True)
 
     novos = 0
     atualizados = 0
 
     for imovel in imoveis:
-        if not imovel.get("url"):
+        if not imovel.get("link"):
             continue  
 
         result = collection.update_one(
-            {"url": imovel["url"]},  
+            {"link": imovel["link"]},  
             {"$set": imovel},        
             upsert=True              
         )
@@ -242,7 +247,7 @@ def salvar_em_mongodb(imoveis, nome_collection):
 if __name__ == "__main__":
     imoveis_extraidos = extrair_imoveis_com_paginacao()
     print(f"🔍 Total de imóveis extraídos: {len(imoveis_extraidos)}")
-    salvar_em_mongodb(imoveis_extraidos, "imoveis_santander")
+    salvar_em_mongodb(imoveis_extraidos, "imoveis")
 
     
 
