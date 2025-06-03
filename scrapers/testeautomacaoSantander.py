@@ -47,6 +47,15 @@ def padronizar_bairro(bairro):
     bairro = bairro.rstrip('.,-')
     return bairro
 
+def parse_float(valor):
+    if not valor:
+        return None
+    valor = valor.replace(".", "").replace(",", ".")
+    try:
+        return float(valor)
+    except ValueError:
+        return None
+
 def extrair_dados_imoveis(html):
     soup = BeautifulSoup(html, 'html.parser')
     cards = soup.find_all('a', class_='card')
@@ -61,7 +70,7 @@ def extrair_dados_imoveis(html):
         body = card.find('div', class_='card-body')
         footer = card.find('div', class_='card-footer')
         
-        card_data['url'] = header['href'] if header and header.has_attr('href') else None
+        card_data['link'] = header['href'] if header and header.has_attr('href') else None
 
         style = header.get('style', '') if header else ''
         if 'url(' in style:
@@ -69,6 +78,9 @@ def extrair_dados_imoveis(html):
         else:
             card_data['imagem'] = None
 
+        card_data['uf'] = 'SP'
+        card_data['cidade'] = 'São Paulo'
+        
         badge = header.find('span', class_='badge badge-dark') if header else None
         card_data['tipo_leilao'] = get_text_safe(badge)
 
@@ -81,8 +93,6 @@ def extrair_dados_imoveis(html):
             titulo = m.group(1).strip()
             card_data['titulo'] = titulo
         
-
-
         div = card.find("div", class_='card-title')
         if div:
             title_text = div.get_text(separator=" ", strip=True)
@@ -91,7 +101,7 @@ def extrair_dados_imoveis(html):
             m = re.search(r"De R\$\s*([\d\.]+)", title_text)
             if m:
                 valor_ant = m.group(1)
-            card_data['valor_avaliacao'] = valor_ant
+            card_data['valor_avaliacao'] = parse_float(valor_ant)
 
             # Valor atual
             valor_atual = None
@@ -102,14 +112,15 @@ def extrair_dados_imoveis(html):
                 valores = re.findall(r"R\$\s*([\d\.]+)", title_text)
                 if len(valores) >= 2:
                     valor_atual = valores[1]
-            card_data['valor_minimo_1_leilao'] = valor_atual
+            card_data['valor_minimo_1_leilao'] = parse_float(valor_atual)
             
             m = re.search(r"Cód\.?\s*[:\.]?\s*([\w\.-]+)", title_text)
-            card_data['codigo'] = m.group(1) if m else None
+            card_data['numero_imovel'] = m.group(1) if m else None
         else:
             card_data['valor_avaliacao'] = None
             card_data['valor_minimo_1_leilao'] = None
-            
+        
+        datas = []
         div_data = card.find("div", class_='card-data')
         if div_data:
             data_text = div_data.get_text(strip=True)
@@ -117,7 +128,8 @@ def extrair_dados_imoveis(html):
             m = re.search(r"Data do Leilão:([0-9]{2}/[0-9]{2}/[0-9]{4})", data_text)
             if m:
                 data = m.group(1)
-            card_data['data'] = data        
+                datas.append(data)
+            card_data['datas_leiloes'] = datas      
 
         bairro = None
         bairro_text = card_data.get('endereco')
