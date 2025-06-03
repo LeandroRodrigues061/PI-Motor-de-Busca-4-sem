@@ -75,21 +75,21 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     detalhes["cidade"] = "São Paulo"
     detalhes["uf"] = "SP"
 
-    valor_avaliacao = None
+    valor_avaliacao_num = None
     match = re.search(r"Valor de avaliação:\s*R\$ [\d\.,]+", soup.text)
     if match:
         valor_avaliacao_str = match.group(0).split(":", 1)[-1].strip()
         valor_avaliacao_num = float(valor_avaliacao_str.replace("R$", "").replace(".", "").replace(",", "."))
     detalhes["valor_avaliacao"] = valor_avaliacao_num
 
-    valor_minimo_1 = None
+    valor_minimo1_num = None
     match = re.search(r"Valor mínimo de venda 1º Leilão:\s*R\$ [\d\.,]+", soup.text)
     if match:
         valor_minimo_1_str = match.group(0).split(":", 1)[-1].strip()
         valor_minimo1_num = float(valor_minimo_1_str.replace("R$", "").replace(".", "").replace(",", "."))
     detalhes["valor_minimo_1_leilao"] = valor_minimo1_num
 
-    valor_minimo_2 = None
+    valor_minimo2_num = None
     match = re.search(r"Valor mínimo de venda 2º Leilão:\s*R\$ [\d\.,]+", soup.text)
     if match:
         valor_minimo_2_str = match.group(0).split(":", 1)[-1].strip()
