@@ -1,3 +1,4 @@
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -8,15 +9,17 @@ from time import sleep
 import tempfile
 from pymongo import MongoClient, errors
 
+# Conexão com MongoDB
 try:
     client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
     db = client["MotorDeBusca"]
-    client.server_info()  
+    client.server_info()
     print("✅ Conectado ao MongoDB.")
 except errors.ServerSelectionTimeoutError as err:
     print("❌ Erro ao conectar ao MongoDB:", err)
     exit(1)
 
+# Configurações do Selenium
 options = Options()
 options.add_argument('--headless')
 options.add_argument('--disable-gpu')
@@ -29,13 +32,12 @@ driver = webdriver.Chrome(options=options)
 driver.get("https://vitrinebradesco.com.br/auctions?city=9668&type=realstate&ufs=SP")
 
 wait = WebDriverWait(driver, 20)
-
 sleep(2)
 
+# Função para extrair dados dos imóveis
 def extrair_dados():
     cards = driver.find_elements(By.CLASS_NAME, "auction-container")
-    dados = []        
-    links = []
+    dados = []
 
     for card in cards:
         try:
@@ -48,53 +50,57 @@ def extrair_dados():
 
         try:
             descricao = card.find_element(By.CLASS_NAME, "description").text.strip()
-            data_leilao = descricao.split("|")[0].strip().split(":")[1].strip()
+            data_do_leilao_str = descricao.split("|")[0].strip().split(":")[1].strip()
+            data_leilao = datetime.strptime(data_do_leilao_str, "%d/%m/%Y")
             endereco_leilao = descricao.split("|")[1].strip().split("Área")[0].strip()
             parceiro_scrap = card.find_element(By.CLASS_NAME, "bottom > p").text
             parceiro = parceiro_scrap.split(":")[1].strip()
+            favorito = False
         except:
             descricao = "N/A"
             data_leilao = "N/A"
             endereco_leilao = "N/A"
             parceiro = "N/A"
+            favorito = False
 
         try:
-            valor_inicial = card.find_element(By.CLASS_NAME, "price > p").text
-        except:
+            valor_element = card.find_element(By.CSS_SELECTOR, ".price > p")
+            valor_texto = valor_element.text
+            valor_limpo = valor_texto.replace("R$", "").replace(".", "").replace(",", ".").strip()
+            valor_inicial = float(valor_limpo)
+        except Exception as e:
+            print("❌ Erro ao processar valor inicial:", e)
             valor_inicial = "N/A"
 
         try:
             link = card.get_attribute("href")
-
             if not link or link == "#":
                 print("⚠️ Link vazio ou inválido encontrado.")
                 continue
-
             if not link.startswith("http"):
                 link = "https://vitrinebradesco.com.br" + link
-
-            links.append(link)
-
         except Exception as e:
             print(f"❌ Erro ao extrair link para o card: {e}")
-
+            continue
 
         dados.append({
             "descricao": descricao,
             "imagem": imagem,
-            "data_leilao": data_leilao,
-            "endereco_leilao": endereco_leilao,
+            "datas_leiloes": data_leilao,
+            "endereco": endereco_leilao,
             "valor_inicial": valor_inicial,
-            "Banco": "Bradesco",
-            "Link": link,
-            "estado": "SP",
+            "banco": "Bradesco",
+            "link": link,
+            "uf": "SP",
             "cidade": "SAO PAULO",
-            "parceiro": parceiro
+            "parceiro": parceiro,
+            "favorito": favorito
         })
 
     print(f"🔎 {len(dados)} imóveis extraídos.")
     return dados
 
+# Função para salvar no MongoDB usando 'link' como chave única
 def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("⚠️ Nenhum dado para salvar no MongoDB.")
@@ -102,17 +108,24 @@ def salvar_em_mongodb(imoveis, nome_collection):
     try:
         collection = db[nome_collection]
 
-        collection.create_index("descricao", unique=True)
+        # Remove índice antigo se existir
+        try:
+            collection.drop_index("descricao_1")
+        except errors.OperationFailure:
+            pass
+
+        # Garante índice único baseado no link
+        collection.create_index("link", unique=True)
 
         novos = 0
         atualizados = 0
 
         for imovel in imoveis:
-            if not imovel.get("descricao"):
-                continue  
+            if not imovel.get("link"):
+                continue
 
             result = collection.update_one(
-                {"descricao": imovel["descricao"]},
+                {"link": imovel["link"]},
                 {"$set": imovel},
                 upsert=True
             )
@@ -128,9 +141,8 @@ def salvar_em_mongodb(imoveis, nome_collection):
     except Exception as e:
         print("❌ Erro ao salvar no MongoDB:", e)
 
-
+# Execução principal
 if __name__ == "__main__":
     imoveis = extrair_dados()
-    salvar_em_mongodb(imoveis, "imoveis_bradesco")
+    salvar_em_mongodb(imoveis, "imoveis")
     driver.quit()
-

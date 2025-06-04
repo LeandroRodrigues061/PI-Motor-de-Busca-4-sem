@@ -262,16 +262,18 @@ def salvar_em_mongodb(imoveis, nome_collection):
         return
 
     collection = db[nome_collection]
+    collection.create_index("numero_imovel", unique=True)
 
     for imovel in imoveis:
-
         try:
-
-            collection = db[nome_collection]
-            result = collection.insert_many(imoveis)
-            print(f"✅ {len(imoveis)} imóveis salvos no MongoDB.")
+            collection.update_one(
+                {"numero_imovel": imovel["numero_imovel"]},  
+                {"$set": imovel},  
+                upsert=True  
+            )
         except Exception as e:
-            print("❌ Erro ao salvar no MongoDB:", e)
+            print(f"❌ Erro ao salvar imóvel {imovel['numero_imovel']}: {e}")
+
 
 if __name__ == "__main__":
     options = Options()
