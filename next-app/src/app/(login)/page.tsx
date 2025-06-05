@@ -14,7 +14,6 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isEmailCheck, setIsEmailCheck] = useState(false);
-  // Form para login ou recupeção de senha
   const [mode, setMode] = useState("login");
 
   const forgotPasswordMode = () => {
@@ -24,7 +23,6 @@ export default function Login() {
     setMode("login");
   };
 
-  // Login
   const handleLogin = async () => {
     try {
       const res = await fetch("/api/auth/login", {
@@ -35,20 +33,16 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        const data = await res.json();
-        return toast.error(data.message || "Erro no login");
+      if (res.ok) {
+        localStorage.setItem('authToken', data.token);
+        toast.success(data.message || "Login realizado com sucesso!"); 
+        return router.push("/buscador");
       }
-      toast.success("Login realizado com sucesso!");
-      localStorage.setItem('authToken', data.token);
-      router.push("/buscador");
+      toast.error(data.message || "Erro no login");
     } catch (error) {
-      toast.error("Erro ao conectar com o servidor.");
       console.error(error);
     }
   };
-
-  // Email existente? para liberar campos de nova senha
 
   const checkEmail = async () => {
     try {
@@ -65,8 +59,6 @@ export default function Login() {
       if (!res.ok) {
         return toast.error(data.message || "Erro ao verificar o email");
       }
-
-      // Se email for encontrado, faz algo (exemplo: habilita a verificação da senha)
       setIsEmailCheck(true);
       toast.success("Email encontrado no banco de dados!");
     } catch (error) {
@@ -78,19 +70,30 @@ export default function Login() {
   // mudar senha
   const [isPasswordChecked, setIsPasswordChecked] = useState(false);
 
-  const changePassword = () => {
-    if (password !== confirmPassword) {
-      return toast.error("As senhas não coincidem, tente novamente!");
+  const changePassword = async () => {
+    try {
+      const res = await fetch("/api/auth/alterarSenha", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, confirmPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return toast.error(data.message || "Erro ao alterar a senha");
+      }
+      toast.success(data.message || "Senha alterada com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocorreu um erro ao tentar alterar a senha");
     }
     setIsPasswordChecked(true);
-    // IMPLEMENTAÇÃO DO BACKEND
   };
 
-  // Voltar para login mode
   const back = () => {
     setMode("login");
   };
-  // fechar modal
   const closeModal = () => {
     setIsPasswordChecked(false);
   };
@@ -131,7 +134,7 @@ export default function Login() {
             }`}
           >
             <button
-              onClick={handleLogin}
+              onClick={back}
               type="button"
               className="text-zinc-500 hover:text-zinc-600 flex items-center gap-2 cursor-pointer transition-colors duration-20 pt-10"
             >

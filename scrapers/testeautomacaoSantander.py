@@ -8,6 +8,8 @@ import time
 import tempfile
 import re
 from datetime import datetime
+import unicodedata
+from datetime import datetime
 
 from pymongo import MongoClient
 
@@ -23,22 +25,53 @@ def parse_datetime(data_str, hora_str):
     except Exception:
         return None
 
+def padronizar_bairro(bairro):
+    if not bairro:
+        return None
+    bairro = bairro.strip()
+    bairro = bairro.upper()
+    bairro = ''.join(
+        c for c in unicodedata.normalize('NFD', bairro)
+        if unicodedata.category(c) != 'Mn'
+    )
+    bairro = re.sub(r'\s+', ' ', bairro)
+    bairro = bairro.replace('JD ', 'JARDIM ')
+    bairro = bairro.replace('JD. ', 'JARDIM ')
+    bairro = bairro.replace('VL ', 'VILA ')
+    bairro = bairro.replace('VL. ', 'VILA ')
+    bairro = bairro.replace('PQ ', 'PARQUE ')
+    bairro = bairro.replace('PQ. ', 'PARQUE ')
+    bairro = bairro.replace('DIST ', 'DISTRITO ')
+    bairro = bairro.replace('S ', 'SÃO ')
+    bairro = bairro.replace('PAULIS ', 'PAULISTA ')
+    bairro
+    bairro = bairro.rstrip('.,-')
+    return bairro
+
+def parse_float(valor):
+    if not valor:
+        return None
+    valor = valor.replace(".", "").replace(",", ".")
+    try:
+        return float(valor)
+    except ValueError:
+        return None
+
 def extrair_dados_imoveis(html):
     soup = BeautifulSoup(html, 'html.parser')
     cards = soup.find_all('a', class_='card')
-
-    def get_text_safe(el):
-        return el.get_text(strip=True) if el else None
 
     imoveis = []
     for card in cards:
         card_data = {}
 
+        card_data['banco'] = 'Santander'
+
         header = card.find('a', class_='card-header')
         body = card.find('div', class_='card-body')
         footer = card.find('div', class_='card-footer')
-
-        card_data['url'] = header['href'] if header and header.has_attr('href') else None
+        
+        card_data['link'] = header['href'] if header and header.has_attr('href') else None
 
         style = header.get('style', '') if header else ''
         if 'url(' in style:
@@ -51,36 +84,66 @@ def extrair_dados_imoveis(html):
 
         svg = header.find('svg') if header else None
         card_data['endereco'] = svg.find_next_sibling(string=True).strip() if svg else None
-
-        card_data['valor_atual'] = None
-        if body:
-            valor_atual_el = body.select_one('.card-valor-atual')
-            if valor_atual_el:
-                porcento = valor_atual_el.find('p', class_='card-porcento')
-                if porcento:
-                    porcento.decompose()
-                card_data['valor_atual'] = valor_atual_el.get_text(strip=True)
-            else:
-                card_data['valor_atual'] = None
         
-        # valor_ant = body.find('div', class_='card-valor-ant') if body else None
-        # valor_atual = body.find('div', class_='card-valor-atual') if body else None
-        # card_data['valor_anterior'] = get_text_safe(valor_ant)
-        # card_data['valor_atual'] = get_text_safe(valor_atual)
+        endereco_original = card_data.get('endereco', '')
+        m = re.match(r"([^,]+)", endereco_original)
+        if m:
+            titulo = m.group(1).strip()
+            card_data['titulo'] = titulo
+        
+        div = card.find("div", class_='card-title')
+        if div:
+            title_text = div.get_text(separator=" ", strip=True)
+            # Valor anterior
+            valor_ant = None
+            m = re.search(r"De R\$\s*([\d\.]+)", title_text)
+            if m:
+                valor_ant = m.group(1)
+            card_data['valor_avaliacao'] = parse_float(valor_ant)
 
-        cod = body.find('small') if body else None
-        card_data['codigo'] = get_text_safe(cod)
-
-        data_info = body.find('div', class_='card-data') if body else None
-        if data_info:
-            data_hora = data_info.find_all('strong')
-            if len(data_hora) >= 2:
-                card_data['data'] = get_text_safe(data_hora[0])
-                card_data['hora'] = get_text_safe(data_hora[1])
+            # Valor atual
+            valor_atual = None
+            m = re.search(r"A partir de\s*R\$\s*([\d\.]+)", title_text)
+            if m:
+                valor_atual = m.group(1)
             else:
-                card_data['data'] = card_data['hora'] = None
+                valores = re.findall(r"R\$\s*([\d\.]+)", title_text)
+                if len(valores) >= 2:
+                    valor_atual = valores[1]
+            card_data['valor_minimo_1_leilao'] = parse_float(valor_atual)
+            
+            m = re.search(r"Cód\.?\s*[:\.]?\s*([\w\.-]+)", title_text)
+            card_data['numero_imovel'] = m.group(1) if m else None
         else:
-            card_data['data'] = card_data['hora'] = None
+            card_data['valor_avaliacao'] = None
+            card_data['valor_minimo_1_leilao'] = None
+            
+        datas_leiloes = []   
+        div_data = card.find("div", class_='card-data')
+        if div_data:
+            data_text = div_data.get_text(strip=True)
+            data = None
+            m = re.search(r"Data do Leilão:([0-9]{2}/[0-9]{2}/[0-9]{4})", data_text)
+            if m:
+                data_str = m.group(1)
+                try:
+                    data = datetime.strptime(data_str, "%d/%m/%Y")
+                    datas_leiloes.append(data)
+                except ValueError:
+                    data = None
+            card_data['datas_leiloes'] = datas_leiloes        
+
+        bairro = None
+        bairro_text = card_data.get('endereco')
+        m = re.search(r",\s*(\d+|S/?N)\s+([^,]+),", bairro_text, re.IGNORECASE) 
+        if m:
+            bairro = m.group(2).strip()
+        card_data['bairro'] = bairro
+        bairro_original = card_data.get('bairro')
+        card_data['bairro'] = padronizar_bairro(bairro_original) if bairro_original else None
+        card_data['uf'] = "SP"
+        card_data['cidade'] = "São Paulo"
+        card_data['favorito'] = False
 
         if footer:
             textos = footer.find_all('p')
@@ -154,11 +217,36 @@ def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("Nenhum dado para salvar no MongoDB.")
         return
+
     collection = db[nome_collection]
-    collection.insert_many(imoveis)
-    print(f"{len(imoveis)} documentos inseridos na collection '{nome_collection}'.")
+
+    collection.create_index("link", unique=True)
+
+    novos = 0
+    atualizados = 0
+
+    for imovel in imoveis:
+        if not imovel.get("link"):
+            continue  
+
+        result = collection.update_one(
+            {"link": imovel["link"]},  
+            {"$set": imovel},        
+            upsert=True              
+        )
+
+        if result.upserted_id:
+            novos += 1
+        elif result.modified_count > 0:
+            atualizados += 1
+
+    print(f"{novos} novos imóveis inseridos na collection '{nome_collection}'.")
+    print(f"{atualizados} imóveis atualizados.")
 
 if __name__ == "__main__":
-    dados = extrair_imoveis_com_paginacao()
-    print(f"\nTotal de imóveis extraídos: {len(dados)}")
-    salvar_em_mongodb(dados, "imoveis_santander")
+    imoveis_extraidos = extrair_imoveis_com_paginacao()
+    print(f"🔍 Total de imóveis extraídos: {len(imoveis_extraidos)}")
+    salvar_em_mongodb(imoveis_extraidos, "imoveis")
+
+    
+

@@ -1,41 +1,54 @@
 "use client";
 import { useFiltro } from "@/context/FilterContext";
-import { useState } from "react";
-import estados from "@/data/constants/Estados";
-import Estado from "@/data/models/Estado";
+import { useState, useEffect } from "react";
 import { Button } from "../Button";
-import bancos from "@/data/constants/Bancos"
-interface Cidade {
-  nome: string;
-  bairros: string[];
-}
+import bancos from "@/data/constants/Bancos";
+import estados from "@/data/constants/Estados";
 
 export default function SidebarFilters() {
-  const { setFiltros } = useFiltro();
-
-  const [estadoSelecionado, setEstadoSelecionado] = useState<Estado | null>(
-    null
-  );
+  const { buscarComFiltros } = useFiltro();
+  const [estadoSelecionado, setEstadoSelecionado] = useState<any | null>(null);
   const [cidadeSelecionada, setCidadeSelecionada] = useState<string | null>(
     null
   );
   const [bairrosSelecionados, setBairrosSelecionados] = useState<string[]>([]);
   const [tipoImovel, setTipoImovel] = useState<string>("indiferente");
   const [valor, setValor] = useState<string>("");
-  const [bancosSelecionados, setBancosSelecionados] = useState<string[]>([])
-  const cidadesDisponiveis: Cidade[] = estadoSelecionado?.cidade || [];
+  const [bancosSelecionados, setBancosSelecionados] = useState<string[]>([]);
+  const cidadesDisponiveis: { nome: string }[] = estadoSelecionado?.cidade || [];
+  const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([]);
 
-  const bairrosDisponiveis: string[] =
-    cidadesDisponiveis.find((c: Cidade) => c.nome === cidadeSelecionada)
-      ?.bairros || [];
+  const fetchBairros = async () => {
+    const response = await fetch("/api/bairros");
+    const data = await response.json();
+    // data.bairros é o array de bairros
+    setBairrosDisponiveis(data.bairros);
+  };
 
   const toggleBairro = (bairro: string) => {
-    setBairrosSelecionados((prev: string[]) =>
-      prev.includes(bairro)
+    setBairrosSelecionados((prev: string[]) => {
+      const updatedBairros = prev.includes(bairro)
         ? prev.filter((b: string) => b !== bairro)
-        : [...prev, bairro]
-    );
+        : [...prev, bairro];
+      console.log("Bairros selecionados:", updatedBairros); // Log para depuração
+      return updatedBairros;
+    });
   };
+
+  const handleBuscar = () => {
+    buscarComFiltros({
+      estado: estadoSelecionado?.name || null,
+      cidade: cidadeSelecionada,
+      bairro: bairrosSelecionados,
+      tipoImovel,
+      valor,
+      banco: bancosSelecionados,
+    });
+  };
+
+  useEffect(() => {
+      fetchBairros();
+  } , []);
 
   return (
     <aside className="w-[340px] min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
@@ -52,7 +65,7 @@ export default function SidebarFilters() {
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
               const estado =
                 estados.find(
-                  (estado: Estado) => estado.id === Number(e.target.value)
+                  (estado: any) => estado.id === Number(e.target.value)
                 ) || null;
               setEstadoSelecionado(estado);
               setCidadeSelecionada(null);
@@ -60,7 +73,7 @@ export default function SidebarFilters() {
             }}
           >
             <option value="">Selecione o estado</option>
-            {estados.map((estado: Estado) => (
+            {estados.map((estado: any) => (
               <option key={estado.id} value={estado.id}>
                 {estado.name}
               </option>
@@ -73,25 +86,22 @@ export default function SidebarFilters() {
           <h2 className="text-xl font-semibold text-zinc-900">Cidade</h2>
           <select
             value={cidadeSelecionada || ""}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-              setCidadeSelecionada(e.target.value);
-              setBairrosSelecionados([]);
-            }}
+            onChange={(e) => setCidadeSelecionada(e.target.value)}
             disabled={!estadoSelecionado}
             className={`border rounded-xl p-2 text-zinc-600 ${
               !estadoSelecionado ? "cursor-no-drop" : ""
             }`}
           >
-            <option value="">Selecione a cidade</option>
-            {cidadesDisponiveis.map((cidade: Cidade) => (
-              <option key={cidade.nome} value={cidade.nome}>
-                {cidade.nome}
+            <option value="">Selecione uma cidade</option>
+            {cidadesDisponiveis.map((cidadeObj, index) => (
+              <option key={index} value={cidadeObj.nome}>
+                {cidadeObj.nome}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Bairros (checkbox múltiplo) */}
+        {/* Bairros */}
         {cidadeSelecionada && (
           <div className="flex flex-col gap-1">
             <h2 className="text-xl font-semibold text-zinc-900">Bairro</h2>
@@ -132,7 +142,8 @@ export default function SidebarFilters() {
             <option value="outros">Outros</option>
           </select>
         </div>
-        {/* faixa de valor */}
+
+        {/* Faixa de Valor */}
         <div className="flex flex-col gap-2">
           <label className="font-semibold text-xl text-zinc-900">
             Faixa de valor
@@ -145,7 +156,9 @@ export default function SidebarFilters() {
               !estadoSelecionado ? "cursor-no-drop " : ""
             }`}
           >
-            <option className="text-xl" value="">Não especificado</option>
+            <option className="text-xl" value="">
+              Não especificado
+            </option>
             <option value="<100000">Até R$ 100.000,00</option>
             <option value="100001-200000">
               R$ 100.000,01 - R$ 200.000,00{" "}
@@ -160,48 +173,35 @@ export default function SidebarFilters() {
           </select>
         </div>
       </div>
+
+      {/* Bancos */}
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold text-zinc-900">Bancos</h2>
-      
-          {bancos.map((banco) => (
-            <label key={banco.id} className="flex gap-2">
-              <input 
-                type="checkbox" 
-                value={banco.name}
-                disabled={!estadoSelecionado}
-                checked={bancosSelecionados.includes(banco.name)}
-                onChange={() => {
-                  setBancosSelecionados((prev) =>
-                    prev.includes(banco.name)
-                      ? prev.filter((nome) => nome !== banco.name)
-                      : [...prev, banco.name]
-                  );
-                }}
-              />
-              {banco.name.charAt(0).toUpperCase() + banco.name.slice(1)}
-            </label>
-          ))}
-        
+        {bancos.map((banco) => (
+          <label key={banco.id} className="flex gap-2">
+            <input
+              type="checkbox"
+              value={banco.name}
+              disabled={!estadoSelecionado}
+              checked={bancosSelecionados.includes(banco.name)}
+              onChange={() => {
+                setBancosSelecionados((prev) =>
+                  prev.includes(banco.name)
+                    ? prev.filter((nome) => nome !== banco.name)
+                    : [...prev, banco.name]
+                );
+              }}
+            />
+            {banco.name.charAt(0).toUpperCase() + banco.name.slice(1)}
+          </label>
+        ))}
       </div>
 
       <span className="w-full h-[0.5px] mt-6 mb-2 rounded-2xl bg-zinc-300"></span>
 
-      <Button
-        variant="primary"
-        size="full"
-        onClick={() => {
-          setFiltros({
-            estado: estadoSelecionado,
-            cidade: cidadeSelecionada,
-            bairros: bairrosSelecionados,
-            tipoImovel,
-            valor,
-            banco: bancosSelecionados
-          });
-        }}
-      >
+      <Button variant="primary" size="full" onClick={handleBuscar}>
         <p className="font-semibold">Buscar</p>
       </Button>
     </aside>
   );
-}
+} 

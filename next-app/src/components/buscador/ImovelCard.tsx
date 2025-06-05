@@ -17,81 +17,52 @@ export default function ImovelCard(props: imovelProps) {
   //   minutos: imovel.tempoRestante.minutos,
   //   segundos: imovel.tempoRestante.segundos,
   // });
-
-  return (
-    <div
-      key={imovel._id}
-      className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-start lg:w-[700px] xl:w-[900px] h-[240px] flex gap-6"
-    >
-      <div className="relative rounded-xl lg:w-64 lg:h-40 xl:w-72 xl:h-52">
-        <Image
-          src={imovel.imagem}
-          alt="imagem da casa"
-          fill
-          className="object-contain"
-        />
+  
+  
+  return(
+    <div key={imovel._id} className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-start w-[900px] h-[320px] flex gap-8">
+    <div className="relative rounded-xl w-72 h-52">
+      <Image src={imovel.imagem} alt="imagem da casa" fill className="object-contain"/>
+    </div>
+    <div className="flex flex-col gap-[7px] w-full">
+      <div className="flex gap-1">
+        <p className="text-zinc-600">Data do leilão:</p>
+        {imovel.datas_leiloes.map((data, index) => (
+        <span key={index}>{data}</span>
+        ))}
       </div>
-      <div className="flex flex-col gap-[8px] w-full">
-        {/* <div className="flex gap-[6px] items-center">
-          <p className="text-zinc-600">Tempo restante:</p>
-        <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
-          <p className="text-white font-semibold">{tempoRestante.dias} dias</p>
-        </div>
-        <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
-          <p className="text-white font-semibold">{tempoRestante.horas} horas</p>
-        </div>
-        <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
-          <p className="text-white font-semibold">{tempoRestante.minutos} min</p>
-        </div>
-        <div className="bg-secondary w-24 flex justify-center items-center py-[3px] rounded-xl">
-          <p className="text-white font-semibold">{tempoRestante.segundos} seg</p>
-        </div>
-      </div> */}
-        <div className="flex gap-1">
-          {/* <p className="text-zinc-600">Data do leilão:</p>
-          <p className="text-zinc-800 font-semibold">{imovel.dataLeilao}</p> */}
-        </div>
-        <div className="flex gap-1">
-          <p className="text-zinc-600">Número do imóvel:</p>
-          <p className="text-zinc-800 font-semibold">{imovel.numeroImovel}</p>
-        </div>
-        <div className="flex gap-1">
-          <p className="text-zinc-600">Valor de avaliação:</p>
-          <p className="text-zinc-800 font-semibold">
-            R$ {imovel.valorAvaliacao}
-          </p>
-        </div>
-        <div className="flex gap-1">
-          <p className="text-zinc-600">Valor mínimo de venda:</p>
-          {/* <p className="text-zinc-800 font-semibold">R$ {imovel.valorMinimoVenda.toLocaleString('pt-BR')}</p> */}
-        </div>
-        <div className="flex gap-1">
-          <p className="text-zinc-600">Endereço:</p>
-          <p className="text-zinc-800 font-semibold">{imovel.endereco}</p>
-        </div>
-        <Button variant="primary" size="default" className="">
-          {" "}
-          <p className="font-semibold">Veja no site do leilão</p>
-        </Button>
+      <div className="flex gap-1">
+        <p className="text-zinc-600">Número do imóvel:</p>
+        <p className="text-zinc-800 font-semibold">{imovel.numero_imovel}</p>
+      </div>  
+      <div className="flex gap-1">
+        <p className="text-zinc-600">Valor de avaliação:</p>
+        <p className="text-zinc-800 font-semibold">R$ {imovel.valor_avaliacao}</p>
       </div>
-      <div className="flex flex-col items-center justify-between h-full">
-        {bancos.map((banco) =>
-          banco.name === imovel.banco ? (
-            <div key={banco.id} className="size-12 rounded-xl relative">
-              <Image
-                src={banco.image}
-                alt={banco.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div key={banco.id} className="hidden "></div>
-          )
-        )}
-
-        <IconHeart size={30} />
-        {/* <button className="cursor-pointer" onClick={toggleFavorite}>
+      <div className="flex gap-1">
+        <p className="text-zinc-600">Valor mínimo de venda:</p>
+        <p className="text-zinc-800 font-semibold">R$ {imovel.valor_minimo_1_leilao.toLocaleString('pt-BR')}</p>
+      </div>
+      <div className="flex gap-1">
+        <p className="text-zinc-600">Endereço:</p>
+        <p className="text-zinc-800 font-semibold">{imovel.endereco}</p>
+      </div>
+      <Button variant="primary" size="default" className="" > <p className="font-semibold">Veja no site do leilão</p></Button>
+    </div>
+    <div className="flex flex-col items-center justify-between h-full">
+      {
+        bancos.map((banco)  => (
+          banco.name === imovel.banco ? 
+          <div key={banco.id} className="size-12 rounded-xl relative">
+            <Image src={banco.image} alt={banco.name} fill className="object-cover"/>
+          </div>
+          :   
+          <div key={banco.id} className="hidden "></div>
+        ))
+      }
+      
+      <IconHeart size={30} />
+       {/* <button className="cursor-pointer" onClick={toggleFavorite}>
       { isFavorite ?
         <IconHeart size={30} className="text-red-500"/> : <IconHeart size={30} />
         }
