@@ -65,7 +65,7 @@ def extrair_dados_imoveis(html):
     for card in cards:
         card_data = {}
 
-        card_data['Banco'] = 'Santander'
+        card_data['banco'] = 'Santander'
 
         header = card.find('a', class_='card-header')
         body = card.find('div', class_='card-body')
@@ -220,7 +220,6 @@ def salvar_em_mongodb(imoveis, nome_collection):
 
     collection = db[nome_collection]
 
-    # Garante que 'url' seja único
     collection.create_index("link", unique=True)
 
     novos = 0
