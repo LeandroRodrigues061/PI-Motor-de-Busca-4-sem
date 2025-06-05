@@ -151,68 +151,68 @@ def extrair_detalhes_imovel(driver, numero_imovel):
 
     return detalhes
 
-# def coletar_lista_imoveis(driver):
-#     wait = WebDriverWait(driver, 20)
-#     lista = []
-#     pagina_atual = 1
-#     while True:
-#         imoveis_divs = driver.find_elements(By.CLASS_NAME, "group-block-item")
-#         for idx, div in enumerate(imoveis_divs):
-#             try:
-#                 img_tag = div.find_element(By.CLASS_NAME, "fotoimovel-col1").find_element(By.TAG_NAME, "img")
-#                 onclick = img_tag.get_attribute("onclick")
-#                 numero_match = re.search(r"detalhe_imovel\((\d+)\)", onclick)
-#                 if numero_match:
-#                     numero_imovel = numero_match.group(1)
-#                     lista.append({
-#                         "numero_imovel": numero_imovel,
-#                         "pagina": pagina_atual,
-#                         "indice": idx
-#                     })
-#             except Exception as e:
-#                 print("Erro ao coletar imóvel:", e)
-#         # Paginação
-#         try:
-#             paginacao = driver.find_element(By.ID, "paginacao")
-#             links = paginacao.find_elements(By.TAG_NAME, "a")
-#             proximo_link = None
-#             for link in links:
-#                 if "carregaListaImoveis" in link.get_attribute("href"):
-#                     numero_pagina = int(link.get_attribute("href").split("carregaListaImoveis(")[1].split(")")[0])
-#                     if numero_pagina > pagina_atual:
-#                         proximo_link = link
-#                         pagina_atual = numero_pagina
-#                         break
-#             if proximo_link:
-#                 driver.execute_script("arguments[0].click();", proximo_link)
-#                 time.sleep(3)
-#                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
-#             else:
-#                 break
-#         except Exception as e:
-#             print("Fim da paginação ou erro:", e)
-#             break
-#     return lista
-
 def coletar_lista_imoveis(driver):
     wait = WebDriverWait(driver, 20)
     lista = []
-    imoveis_divs = driver.find_elements(By.CLASS_NAME, "group-block-item")
-    for idx, div in enumerate(imoveis_divs):
+    pagina_atual = 1
+    while True:
+        imoveis_divs = driver.find_elements(By.CLASS_NAME, "group-block-item")
+        for idx, div in enumerate(imoveis_divs):
+            try:
+                img_tag = div.find_element(By.CLASS_NAME, "fotoimovel-col1").find_element(By.TAG_NAME, "img")
+                onclick = img_tag.get_attribute("onclick")
+                numero_match = re.search(r"detalhe_imovel\((\d+)\)", onclick)
+                if numero_match:
+                    numero_imovel = numero_match.group(1)
+                    lista.append({
+                        "numero_imovel": numero_imovel,
+                        "pagina": pagina_atual,
+                        "indice": idx
+                    })
+            except Exception as e:
+                print("Erro ao coletar imóvel:", e)
+        # Paginação
         try:
-            img_tag = div.find_element(By.CLASS_NAME, "fotoimovel-col1").find_element(By.TAG_NAME, "img")
-            onclick = img_tag.get_attribute("onclick")
-            numero_match = re.search(r"detalhe_imovel\((\d+)\)", onclick)
-            if numero_match:
-                numero_imovel = numero_match.group(1)
-                lista.append({
-                    "numero_imovel": numero_imovel,
-                    "pagina": 1,
-                    "indice": idx
-                })
+            paginacao = driver.find_element(By.ID, "paginacao")
+            links = paginacao.find_elements(By.TAG_NAME, "a")
+            proximo_link = None
+            for link in links:
+                if "carregaListaImoveis" in link.get_attribute("href"):
+                    numero_pagina = int(link.get_attribute("href").split("carregaListaImoveis(")[1].split(")")[0])
+                    if numero_pagina > pagina_atual:
+                        proximo_link = link
+                        pagina_atual = numero_pagina
+                        break
+            if proximo_link:
+                driver.execute_script("arguments[0].click();", proximo_link)
+                time.sleep(3)
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
+            else:
+                break
         except Exception as e:
-            print("Erro ao coletar imóvel:", e)
+            print("Fim da paginação ou erro:", e)
+            break
     return lista
+
+# def coletar_lista_imoveis(driver):
+#     wait = WebDriverWait(driver, 20)
+#     lista = []
+#     imoveis_divs = driver.find_elements(By.CLASS_NAME, "group-block-item")
+#     for idx, div in enumerate(imoveis_divs):
+#         try:
+#             img_tag = div.find_element(By.CLASS_NAME, "fotoimovel-col1").find_element(By.TAG_NAME, "img")
+#             onclick = img_tag.get_attribute("onclick")
+#             numero_match = re.search(r"detalhe_imovel\((\d+)\)", onclick)
+#             if numero_match:
+#                 numero_imovel = numero_match.group(1)
+#                 lista.append({
+#                     "numero_imovel": numero_imovel,
+#                     "pagina": 1,
+#                     "indice": idx
+#                 })
+#         except Exception as e:
+#             print("Erro ao coletar imóvel:", e)
+#     return lista
 
 def navegar_ate_imovel(driver, estado, cidade, pagina, indice):
     wait = WebDriverWait(driver, 20)
@@ -262,7 +262,12 @@ def salvar_em_mongodb(imoveis, nome_collection):
         return
 
     collection = db[nome_collection]
-    collection.create_index("numero_imovel", unique=True)
+    try:
+        collection.drop_index("numero_imovel_1") 
+    except Exception:
+        pass  
+
+    collection.create_index("numero_imovel", unique=True, sparse=True)
 
     for imovel in imoveis:
         try:

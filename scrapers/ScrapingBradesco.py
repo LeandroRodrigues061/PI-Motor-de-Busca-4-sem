@@ -9,7 +9,6 @@ from time import sleep
 import tempfile
 from pymongo import MongoClient, errors
 
-# Conexão com MongoDB
 try:
     client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
     db = client["MotorDeBusca"]
@@ -19,7 +18,6 @@ except errors.ServerSelectionTimeoutError as err:
     print("❌ Erro ao conectar ao MongoDB:", err)
     exit(1)
 
-# Configurações do Selenium
 options = Options()
 options.add_argument('--headless')
 options.add_argument('--disable-gpu')
@@ -34,7 +32,6 @@ driver.get("https://vitrinebradesco.com.br/auctions?city=9668&type=realstate&ufs
 wait = WebDriverWait(driver, 20)
 sleep(2)
 
-# Função para extrair dados dos imóveis
 def extrair_dados():
     cards = driver.find_elements(By.CLASS_NAME, "auction-container")
     dados = []
@@ -100,7 +97,6 @@ def extrair_dados():
     print(f"🔎 {len(dados)} imóveis extraídos.")
     return dados
 
-# Função para salvar no MongoDB usando 'link' como chave única
 def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("⚠️ Nenhum dado para salvar no MongoDB.")
@@ -108,13 +104,11 @@ def salvar_em_mongodb(imoveis, nome_collection):
     try:
         collection = db[nome_collection]
 
-        # Remove índice antigo se existir
         try:
             collection.drop_index("descricao_1")
         except errors.OperationFailure:
             pass
 
-        # Garante índice único baseado no link
         collection.create_index("link", unique=True)
 
         novos = 0
@@ -141,7 +135,6 @@ def salvar_em_mongodb(imoveis, nome_collection):
     except Exception as e:
         print("❌ Erro ao salvar no MongoDB:", e)
 
-# Execução principal
 if __name__ == "__main__":
     imoveis = extrair_dados()
     salvar_em_mongodb(imoveis, "imoveis")

@@ -110,14 +110,18 @@ try:
         })
 
     def salvar_em_mongodb(imoveis, nome_collection):
-        # Filtra imóveis com numero_imovel válido
         imoveis = [d for d in imoveis if d.get("numero_imovel") not in (None, "", "N/A")]
         if not imoveis:
             print("⚠️ Nenhum dado válido para salvar no MongoDB.")
             return
         try:
             collection = db[nome_collection]
-            collection.create_index("numero_imovel", unique=True)
+            try:
+                collection.drop_index("numero_imovel_1")
+            except errors.OperationFailure:
+                pass
+
+            collection.create_index("numero_imovel", unique=True, sparse=True)
 
             novos = 0
             atualizados = 0
