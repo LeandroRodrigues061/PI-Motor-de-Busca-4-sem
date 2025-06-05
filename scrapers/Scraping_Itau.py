@@ -1,12 +1,9 @@
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import JavascriptException, NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import (NoSuchElementException, StaleElementReferenceException)
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.remote.shadowroot import ShadowRoot
-from time import sleep
 import time
 import tempfile
 from pymongo import MongoClient, errors
@@ -26,37 +23,50 @@ options.add_argument('--headless')
 options.add_argument('--disable-gpu')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--window-size=1920,1080')
-options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36")
 options.add_argument('--window-size=1366,768')
+options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
 options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-
 
 driver = webdriver.Chrome(options=options)
 
 try:
     driver.get("https://www.itau.com.br/imoveis-itau?estado=S%C3%83O+PAULO&cidade=SAO+PAULO")
+    time.sleep(5)
 
-    time.sleep(5) 
-
-    wait = WebDriverWait(driver, 30)  
+    wait = WebDriverWait(driver, 30)
     wait.until(lambda d: d.execute_script("return document.querySelector('app-leiloes-list') !== null"))
 
     app_root = driver.find_element(By.CSS_SELECTOR, "app-leiloes-list")
     shadow_root = driver.execute_script("return arguments[0].shadowRoot", app_root)
 
+    while True:
+        try:
+            carregar_mais_button = shadow_root.find_element(By.CSS_SELECTOR, ".itau-leiloes-pagination-button button")
+            driver.execute_script("arguments[0].click();", carregar_mais_button)
+            time.sleep(2)
+        except NoSuchElementException:
+            print("🏁 Todos os imóveis foram carregados.")
+            break
+        except StaleElementReferenceException:
+            print("⚠️ Botão obsoleto. Recarregando referência...")
+            time.sleep(2)
+            shadow_root = driver.execute_script("return arguments[0].shadowRoot", app_root)
+        except Exception as e:
+            print(f"❌ Erro ao clicar em 'Carregar mais': {e}")
+            break
+
     container = shadow_root.find_element(By.CSS_SELECTOR, ".itau-leiloes-pagination-cards")
     cards = container.find_elements(By.CSS_SELECTOR, ".itau-leiloes-card")
+    print(f"🔎 {len(cards)} imóveis encontrados.")
 
     dados = []
     for card in cards:
         encerramento = "N/A"
-        codigo = "N/A"
+        numero_imovel = "N/A"
+        datas_leiloes = None
 
         try:
-            imagem_element = card.find_element(By.CSS_SELECTOR, "img.itau-leiloes-carrousel-image")
-            imagem = imagem_element.get_attribute("src")
+            imagem = card.find_element(By.CSS_SELECTOR, "img.itau-leiloes-carrousel-image").get_attribute("src")
         except NoSuchElementException:
             imagem = "N/A"
 
@@ -66,60 +76,62 @@ try:
                 text = tag.text.lower()
                 if "encerra em" in text:
                     encerramento = text.replace("encerra em", "").strip()
+                    try:
+                        datas_leiloes = datetime.strptime(encerramento, "%d/%m/%Y")
+                    except ValueError:
+                        datas_leiloes = None
                 elif "código do imovel:" in text:
-                    codigo = text.replace("código do imovel:", "").strip()
+                    numero_imovel = text.replace("código do imovel:", "").strip()
         except Exception:
             pass
 
-        link_imovel = "https://www.itau.com.br/imoveis-itau/detalhes?id=" + codigo
+        link_imovel = f"https://www.itau.com.br/imoveis-itau/detalhes?id={numero_imovel}"
 
         try:
-            endereco_element = card.find_element(By.CSS_SELECTOR, ".itau-leiloes-card-info-street_address")
-            endereco = endereco_element.text
-
-            valor_element = card.find_element(By.CSS_SELECTOR, ".itau-leiloes-card-info-current_price")
-            valor = valor_element.text
+            endereco = card.find_element(By.CSS_SELECTOR, ".itau-leiloes-card-info-street_address").text
+            valor_texto = card.find_element(By.CSS_SELECTOR, ".itau-leiloes-card-info-current_price").text
+            valor_limpo = valor_texto.replace("R$", "").replace(".", "").replace(",", ".").strip()
+            valor_inicial = float(valor_limpo)
         except NoSuchElementException:
             endereco = "N/A"
+            valor_inicial = 0.0
 
-
-        dados.append({"cidade": "SAO PAULO", "estado": "SP", "link": link_imovel, "Banco": "Itau", "imagem": imagem.strip(), "endereco": endereco.strip(), "valor_inicial": valor.strip() if valor else "N/A", "codigo": codigo, "data_encerramento": encerramento})
-
-        try:
-            carregar_mais_button = shadow_root.find_element(By.CSS_SELECTOR, ".itau-leiloes-pagination-button")
-            driver.execute_script("arguments[0].click();", carregar_mais_button)
-            time.sleep(3)  
-        except NoSuchElementException:
-            print("🏁 Todos os leilões foram carregados.")
-            
-        except StaleElementReferenceException:
-            print("⚠️ Elemento 'carregar mais' ficou obsoleto. Tentando novamente...")
-            time.sleep(2)
-
-        except Exception as e:
-            print(f"❌ Ocorreu um erro durante a extração ou ao clicar em 'carregar mais': {e}")
-        
-
-    print(f"🔎 {len(dados)} imóveis encontrados.")
+        dados.append({
+            "cidade": "SAO PAULO",
+            "uf": "SP",
+            "link": link_imovel,
+            "banco": "Itau",
+            "imagem": imagem.strip(),
+            "endereco": endereco.strip(),
+            "valor_inicial": valor_inicial,
+            "numero_imovel": numero_imovel,
+            "datas_leiloes": datas_leiloes,
+            "favorito": False
+        })
 
     def salvar_em_mongodb(imoveis, nome_collection):
+        imoveis = [d for d in imoveis if d.get("numero_imovel") not in (None, "", "N/A")]
         if not imoveis:
-            print("⚠️ Nenhum dado para salvar no MongoDB.")
+            print("⚠️ Nenhum dado válido para salvar no MongoDB.")
             return
         try:
             collection = db[nome_collection]
+            try:
+                collection.drop_index("numero_imovel_1")
+            except errors.OperationFailure:
+                pass
 
-            collection.create_index("codigo", unique=True)
+            collection.create_index("numero_imovel", unique=True, sparse=True)
 
             novos = 0
             atualizados = 0
 
             for imovel in imoveis:
                 if "imagem" not in imovel or not imovel["imagem"]:
-                    imovel["imagem"] = f"sem_imagem_{imovel['codigo']}"
+                    imovel["imagem"] = f"sem_imagem_{imovel['numero_imovel']}"
 
                 result = collection.update_one(
-                    {"codigo": imovel["codigo"]},  
+                    {"numero_imovel": imovel["numero_imovel"]},
                     {"$set": imovel},
                     upsert=True
                 )
@@ -134,8 +146,8 @@ try:
 
         except Exception as e:
             print("❌ Erro ao salvar no MongoDB:", e)
-    salvar_em_mongodb(dados, "imoveis_itau")
 
+    salvar_em_mongodb(dados, "imoveis")
 
 finally:
     driver.quit()
