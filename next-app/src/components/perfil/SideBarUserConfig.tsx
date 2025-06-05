@@ -1,28 +1,21 @@
 "use client";
+import { useSidebar } from "@/context/SideBarContext";
 import useWindowSize from "@/hooks/useWindowSize";
-import { IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowRight } from "@tabler/icons-react";
 import { useState } from "react";
 
 export default function SideBarUserConfig() {
   const [option, setOption] = useState("favoritos");
   const modeFavorite = () => setOption("favoritos");
+  const {toggleSideBar,  } = useSidebar()
 
-  const [isMobile, setsMobile] = useState(false);
-
-  const [isShow, setIsShow] = useState(false);
   const { width } = useWindowSize();
   return (
     <>
-     {
-      width < 500 
-     }
-      <button>
-
-      </button>
       <aside className=" md:w-[340px] min-h-screen border-r border-zinc-200 p-8 flex flex-col gap-4 ">
         <div className="w-full  md:hidden">
-          <button>
-            <IconArrowLeft />
+          <button onClick={() => toggleSideBar}>
+            <IconArrowRight />
           </button>
         </div>
         <h2 className="text-zinc-500 font-semibold">Aqui é o seu perfil</h2>

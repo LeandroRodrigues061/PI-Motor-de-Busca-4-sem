@@ -2,11 +2,11 @@
 import Template from "@/components/layout/Template";
 import { useSidebar } from "@/context/SideBarContext";
 import { useEffect, useState } from "react";
-import { IconSearch } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowLeft, IconSearch } from "@tabler/icons-react";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
 export default function Perfil() {
-  const { setTipo } = useSidebar();
+  const { setTipo, toggleSideBar } = useSidebar();
   const setUserConfigSidebar = () => setTipo("user_config");
   useEffect(() => {
     setUserConfigSidebar();
@@ -30,6 +30,11 @@ export default function Perfil() {
   return (
     <Template>
       <section className="flex flex-col p-8 gap-4">
+        <div className="w-full md:hidden">
+          <button onClick={() => toggleSideBar}>
+            <IconArrowLeft />
+          </button>
+        </div>
         <div className="flex flex-col gap-4">
           <div className="flex gap-2 items-center">
             <div className="w-1 h-6 bg-primary rounded-lg" />
@@ -72,8 +77,8 @@ export default function Perfil() {
                 Ops! Nenhum resultado encontrado
               </h3>
               <p className="text-zinc-600 text-center">
-                Não há nenhum imóvel que com base na sua busca.
-                Pesquise novamente para encontrar seus imóveis.
+                Não há nenhum imóvel que com base na sua busca. Pesquise
+                novamente para encontrar seus imóveis.
               </p>
               <Image
                 src={"/img/search-house.png"}
