@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.options import Options
 from time import sleep
 import tempfile
 from pymongo import MongoClient, errors
+import re
 
 try:
     client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
@@ -32,6 +33,45 @@ driver.get("https://vitrinebradesco.com.br/auctions?city=9668&type=realstate&ufs
 wait = WebDriverWait(driver, 20)
 sleep(2)
 
+def extrair_endereco_flex(descricao):
+    if not isinstance(descricao, str) or descricao == "N/A":
+        return "N/A"
+
+    try:
+        partes = descricao.split("|")
+        if len(partes) > 1:
+            endereco = partes[1].strip()
+            if "Área" in endereco:
+                endereco = endereco.split("Área")[0].strip()
+            stopwords = ["Com direito", "c/ direito", "Apartamento", "Casa", "Prédio", "Sala", "Lote", "Galpão", "Terreno"]
+            for sw in stopwords:
+                if sw.lower() in endereco.lower():
+                    endereco = re.split(sw, endereco, flags=re.IGNORECASE)[0].strip()
+            endereco = re.sub(r'[-–—,;\\(.]*$', '', endereco).strip()
+            if len(endereco) > 8:
+                return endereco
+    except Exception:
+        pass
+
+    padrao = r'(Rua|Avenida|Av\.|Travessa|Alameda|Praça|Rodovia|Estrada)[^\d\n|,]*\s?\d{1,5}'
+    match = re.search(padrao, descricao, re.IGNORECASE)
+    if match:
+        endereco = match.group(0).strip()
+        endereco = re.sub(r'[-–—,;\\(.]*$', '', endereco).strip()
+        return endereco
+
+    try:
+        if "|" in descricao:
+            trecho = descricao.split("|")[1]
+            if "." in trecho:
+                endereco = trecho.split(".")[0].strip()
+                endereco = re.sub(r'[-–—,;\\(.]*$', '', endereco).strip()
+                if len(endereco) > 8:
+                    return endereco
+    except Exception:
+        pass
+    return "N/A"
+
 def extrair_dados():
     cards = driver.find_elements(By.CLASS_NAME, "auction-container")
     dados = []
@@ -49,12 +89,11 @@ def extrair_dados():
             descricao = card.find_element(By.CLASS_NAME, "description").text.strip()
             data_do_leilao_str = descricao.split("|")[0].strip().split(":")[1].strip()
             data_leilao = datetime.strptime(data_do_leilao_str, "%d/%m/%Y")
-            endereco_leilao = descricao.split("|")[1].strip().split("Área")[0].strip()
+            endereco_leilao = extrair_endereco_flex(descricao)            
             parceiro_scrap = card.find_element(By.CLASS_NAME, "bottom > p").text
             parceiro = parceiro_scrap.split(":")[1].strip()
             favorito = False
         except:
-            descricao = "N/A"
             data_leilao = "N/A"
             endereco_leilao = "N/A"
             parceiro = "N/A"
@@ -81,7 +120,6 @@ def extrair_dados():
             continue
 
         dados.append({
-            "descricao": descricao,
             "imagem": imagem,
             "datas_leiloes": data_leilao,
             "endereco": endereco_leilao,
