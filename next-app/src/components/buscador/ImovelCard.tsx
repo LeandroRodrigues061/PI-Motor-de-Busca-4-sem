@@ -20,7 +20,12 @@ export default function ImovelCard(props: imovelProps) {
       <div className="flex gap-1">
         <p className="text-zinc-600">Data do leilão:</p>
         {imovel.datas_leiloes.map((data, index) => (
-        <span key={index}>{data}</span>
+             <span key={index}>  
+          {new Date(data).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          })}</span>
         ))}
       </div>
       <div className="flex gap-1">
@@ -29,7 +34,14 @@ export default function ImovelCard(props: imovelProps) {
       </div>  
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor de avaliação:</p>
-        <p className="text-zinc-800 font-semibold">R$ {imovel.valor_avaliacao}</p>
+        <p className="text-zinc-800 font-semibold">R$
+        {imovel.valor_avaliacao && typeof imovel.valor_avaliacao === "number"
+          ? imovel.valor_avaliacao.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+          })
+          : " Não informado"}
+          </p>
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor mínimo de venda:</p>
@@ -39,7 +51,7 @@ export default function ImovelCard(props: imovelProps) {
               style: "currency",
               currency: "BRL",
            })
-          : "Não informado"}</p>
+          : " Não informado"}</p>
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Endereço:</p>

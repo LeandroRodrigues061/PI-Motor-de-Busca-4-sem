@@ -8,12 +8,12 @@ export interface Imovel {
   numero_imovel:   string, // Número do imóvel no leilão
   imagem:         string,
   link:           string,
-  valor_avaliacao: string,
+  valor_avaliacao: number,
   tipoImovel:     string,
   endereco:       string,
-  datas_leiloes: string[], // Datas dos leilões
-  valor_minimo_1_leilao: number, // Valor mínimo de venda no primeiro leilão
-  valor_minimo_2_leilao: number, // Valor mínimo de venda no segundo leilão
+  datas_leiloes: Date[], // Datas dos leilões
+  valor_minimo_1_leilao: number | null, // Valor mínimo de venda no primeiro leilão
+  valor_minimo_2_leilao: number | null, // Valor mínimo de venda no segundo leilão
   formas_pagamento: string[], // Formas de pagamento disponíveis
 
   // valorAvaliacao: number;
@@ -33,10 +33,10 @@ const ImovelSchema = new Schema({
   numeroImovel: { type: String }, // Número do imóvel no leilão
   imagem: { type: String },
   link  : { type: String },
-  valor_avaliacao: { type: String },
-  valor_minimo_1_leilao : { type: String }, // Valor mínimo de venda no primeiro leilão
-  valor_minimo_2_leilao : { type: String }, // Valor mínimo de venda no segundo leilão
-  datas_leiloes: { type: [String] }, // Datas dos leilões
+  valor_avaliacao: { type: Number },
+  valor_minimo_1_leilao : { type: Number }, // Valor mínimo de venda no primeiro leilão
+  valor_minimo_2_leilao : { type: Number }, // Valor mínimo de venda no segundo leilão
+  datas_leiloes: { type: [Date] }, // Datas dos leilões
   formas_pagamento: { type: [String] }, // Formas de pagamento disponíveis
   tipoImovel: { type: String },
   endereco: { type: String },
