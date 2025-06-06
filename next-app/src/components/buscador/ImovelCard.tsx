@@ -3,6 +3,7 @@ import { Button } from "../Button";
 import { IconHeart } from "@tabler/icons-react";
 import { Imovel }  from "@/data/models/Imovel";
 import bancos from "@/data/constants/Bancos";
+import { useState } from "react";
 
 export interface imovelProps{
   imovel: Imovel;
@@ -34,7 +35,7 @@ export default function ImovelCard(props: imovelProps) {
       </div>  
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor de avaliação:</p>
-        <p className="text-zinc-800 font-semibold">R$
+        <p className="text-zinc-800 font-semibold">
         {imovel.valor_avaliacao && typeof imovel.valor_avaliacao === "number"
           ? imovel.valor_avaliacao.toLocaleString("pt-BR", {
           style: "currency",
@@ -45,7 +46,7 @@ export default function ImovelCard(props: imovelProps) {
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor mínimo de venda:</p>
-        <p className="text-zinc-800 font-semibold">R$   
+        <p className="text-zinc-800 font-semibold">
           {typeof imovel.valor_minimo_1_leilao === "number"
             ? imovel.valor_minimo_1_leilao.toLocaleString("pt-BR", {
               style: "currency",
