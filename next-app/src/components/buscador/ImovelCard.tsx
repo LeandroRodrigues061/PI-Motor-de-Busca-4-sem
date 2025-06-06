@@ -9,20 +9,12 @@ export interface imovelProps {
 }
 
 export default function ImovelCard(props: imovelProps) {
-  const { imovel } = props;
-
-  // const [tempoRestante, setTempoRestante] = useState({
-  //   dias: imovel.tempoRestante.dias,
-  //   horas: imovel.tempoRestante.horas,
-  //   minutos: imovel.tempoRestante.minutos,
-  //   segundos: imovel.tempoRestante.segundos,
-  // });
-  
+  const { imovel } = props
   
   return(
     <div key={imovel._id} className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-start w-[900px] h-[320px] flex gap-8">
     <div className="relative rounded-xl w-72 h-52">
-      <Image src={imovel.imagem} alt="imagem da casa" fill className="object-contain"/>
+      <Image src={imovel.imagem || "/img/search-house.png"} alt="imagem da casa" fill className="object-contain"/>
     </div>
     <div className="flex flex-col gap-[7px] w-full">
       <div className="flex gap-1">
@@ -41,13 +33,27 @@ export default function ImovelCard(props: imovelProps) {
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Valor mínimo de venda:</p>
-        <p className="text-zinc-800 font-semibold">R$ {imovel.valor_minimo_1_leilao.toLocaleString('pt-BR')}</p>
+        <p className="text-zinc-800 font-semibold">R$   
+          {typeof imovel.valor_minimo_1_leilao === "number"
+            ? imovel.valor_minimo_1_leilao.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+           })
+          : "Não informado"}</p>
       </div>
       <div className="flex gap-1">
         <p className="text-zinc-600">Endereço:</p>
         <p className="text-zinc-800 font-semibold">{imovel.endereco}</p>
       </div>
-      <Button variant="primary" size="default" className="" > <p className="font-semibold">Veja no site do leilão</p></Button>
+      <a
+          href={imovel.link} 
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+        <Button variant="primary" size="default" className="" > 
+          <p className="font-semibold">Veja no site do leilão</p>
+        </Button>
+      </a>
     </div>
     <div className="flex flex-col items-center justify-between h-full">
       {

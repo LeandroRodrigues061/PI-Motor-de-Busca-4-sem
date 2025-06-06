@@ -1,7 +1,7 @@
 import { IconArrowDown, IconArrowUp, IconClock, IconCalendarEvent, IconBellDollar } from "@tabler/icons-react";
 export interface subFiltrosProps{
   filter: string | null
-  handleFiltro: (tipo: "valor" | "dataLeilao" | "tempoRestante" | null) => void
+  handleFiltro: (tipo: "valor" | "dataLeilao" | null) => void
   crescente: boolean
 }
 export default function SubFiltros(props: subFiltrosProps) {
@@ -34,18 +34,6 @@ export default function SubFiltros(props: subFiltrosProps) {
           (crescente ? <IconArrowUp size={16} /> : <IconArrowDown size={16} />)}
       </button>
 
-      <button
-        onClick={() => handleFiltro("tempoRestante")}
-        className={`px-6 py-2 hover:text-primary font-semibold transition-all border rounded-xl cursor-pointer flex gap-1 items-center ${
-          filter === "tempoRestante"
-            ? "border-primary text-primary"
-            : "border-zinc-300 text-zinc-500"
-        }`}
-      >
-        Tempo Restante{" "}
-        {filter === "tempoRestante" &&
-          (crescente ? <IconArrowUp size={16} /> : <IconArrowDown size={16} />)}
-      </button>
     </div>
   );
 }
