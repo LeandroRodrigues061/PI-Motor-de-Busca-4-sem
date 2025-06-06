@@ -3,22 +3,22 @@ import Banco from "../models/Banco";
 const bancos: Banco[] = [
   {
     id:1,
-    name: "itau",
+    name: "Itau",
     image: "/img/itau.svg", 
   },
   {
     id:2,
-    name: "bradesco",
+    name: "Bradesco",
     image: "/img/bradesco.svg", 
   },
   {
     id:3,
-    name: "caixa",
+    name: "Caixa",
     image: "/img/caixa.svg", 
   },
   {
     id:4,
-    name: "santander",
+    name: "Santander",
     image: "/img/santander.svg", 
   },
 ]
