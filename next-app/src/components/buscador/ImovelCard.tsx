@@ -45,7 +45,15 @@ export default function ImovelCard(props: imovelProps) {
         <p className="text-zinc-600">Endereço:</p>
         <p className="text-zinc-800 font-semibold">{imovel.endereco}</p>
       </div>
-      <Button variant="primary" size="default" className="" > <p className="font-semibold">Veja no site do leilão</p></Button>
+      <a
+          href={imovel.link} 
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+        <Button variant="primary" size="default" className="" > 
+          <p className="font-semibold">Veja no site do leilão</p>
+        </Button>
+      </a>
     </div>
     <div className="flex flex-col items-center justify-between h-full">
       {

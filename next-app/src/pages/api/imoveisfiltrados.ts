@@ -40,6 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
+      if (banco && banco.length > 0) {
+        query.banco = { $in: banco };
+      }
       console.log("BODY:", req.body);
       console.log("QUERY:", query);
 
