@@ -1,4 +1,3 @@
-// src/app/buscador/page.tsx
 'use client'
 import Template from "@/components/layout/Template";
 import { useState, useEffect } from "react";
@@ -7,16 +6,15 @@ import Image from "next/image";
 import SubFiltros from "@/components/buscador/SubFiltros";
 import { Imovel } from "@/data/models/Imovel";
 import { useFiltro } from "@/context/FilterContext";
-import { isDate } from "util/types";
 
 export default function Buscador() {
-  // Removido "tempoRestante" do tipo de 'filter'
   const [filter, setFilter] = useState<"valor" | "dataLeilao" | null>(null);
   const [crescente, setCrescente] = useState(false); 
   const { imoveis: fetchedImoveis } = useFiltro();
   const [sortedImoveis, setSortedImoveis] = useState<Imovel[]>([]);
+  const [currentPage, setCurrentPage] = useState(1); // Estado para a página atual
+  const itemsPerPage = 15; // Número de imóveis por página
 
-  // Removido "tempoRestante" do tipo do parâmetro 'tipo'
   const handleFiltro = (tipo: "valor" | "dataLeilao" | null) => {
     if (filter === tipo) {
       setCrescente(!crescente);
@@ -29,26 +27,18 @@ export default function Buscador() {
   useEffect(() => {
     let imoveisParaOrdenar = [...fetchedImoveis];
   
-    // Função auxiliar para comparar datas
     const compararDatas = (datasLeiloesA?: Date[], datasLeiloesB?: Date[]): number => {
       const dateObjA = datasLeiloesA?.[0];
       const dateObjB = datasLeiloesB?.[0];
   
-      console.log({
-        dateObjA,
-        dateObjB,
-      });
-  
-      // Verifica se ambos os objetos de data são válidos
       if (dateObjA && dateObjB) {
-        return new Date(dateObjA).getTime() - new Date(dateObjB).getTime(); // Ascendente
+        return new Date(dateObjA).getTime() - new Date(dateObjB).getTime(); 
       }
   
-      // Coloca datas inválidas ou ausentes no final
       if (dateObjA) return -1;
       if (dateObjB) return 1;
   
-      return 0; // Ambos são inválidos ou ausentes
+      return 0; 
     };
   
     if (filter === "valor") {
@@ -80,7 +70,22 @@ export default function Buscador() {
     }
   
     setSortedImoveis(imoveisParaOrdenar);
+    setCurrentPage(1); // Reinicia para a primeira página ao alterar os filtros
   }, [fetchedImoveis, filter, crescente]);
+
+  // Calcular os imóveis para a página atual
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentImoveis = sortedImoveis.slice(startIndex, endIndex);
+
+  // Calcular o número total de páginas
+  const totalPages = Math.ceil(sortedImoveis.length / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <Template>
@@ -102,8 +107,8 @@ export default function Buscador() {
         </p>
 
         <div className="flex flex-col gap-6">
-          {sortedImoveis.length !== 0 ? (
-            sortedImoveis.map((imovel) => (
+          {currentImoveis.length !== 0 ? (
+            currentImoveis.map((imovel) => (
               <ImovelCard key={imovel._id} imovel={imovel} />
             ))
           ) : (
@@ -120,6 +125,35 @@ export default function Buscador() {
               />
             </div>
           )}
+        </div>
+
+        {/* Botões de paginação */}
+        <div className="pagination flex justify-center gap-2 mt-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border rounded-lg bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            Anterior
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handlePageChange(index + 1)}
+              className={`px-4 py-2 border rounded-lg ${
+                currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border rounded-lg bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            Próximo
+          </button>
         </div>
       </section>
     </Template>
