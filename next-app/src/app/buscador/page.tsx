@@ -7,27 +7,7 @@ import Image from "next/image";
 import SubFiltros from "@/components/buscador/SubFiltros";
 import { Imovel } from "@/data/models/Imovel";
 import { useFiltro } from "@/context/FilterContext";
-
-// Função auxiliar para parsear datas no formato "DD/MM/YYYY"
-// Coloque esta função no escopo do componente ou importe de um arquivo de utilitários
-function parsePtBrDate(dateString?: string): Date { // Alterado para retornar Date, incluindo Invalid Date
-  if (!dateString) return new Date(NaN); // Retorna Invalid Date se não houver string
-  const parts = dateString.split('/');
-  if (parts.length === 3) {
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1; // Mês é 0-indexado
-    const year = parseInt(parts[2], 10);
-    if (!isNaN(day) && !isNaN(month) && !isNaN(year) && year >= 1000 && year <= 9999 && month >= 0 && month <= 11 && day >= 1 && day <= 31) {
-      const date = new Date(Date.UTC(year, month, day));
-      // Checagem para garantir que o JS não "corrigiu" a data (ex: 31/02 virando 03/03)
-      if (date.getUTCFullYear() === year && date.getUTCMonth() === month && date.getUTCDate() === day) {
-        return date;
-      }
-    }
-  }
-  // console.warn(`Data em formato inválido ou não reconhecido para parsePtBrDate: ${dateString}`);
-  return new Date(NaN); // Retorna Invalid Date se o parse falhar
-}
+import { isDate } from "util/types";
 
 export default function Buscador() {
   // Removido "tempoRestante" do tipo de 'filter'
@@ -48,59 +28,57 @@ export default function Buscador() {
 
   useEffect(() => {
     let imoveisParaOrdenar = [...fetchedImoveis];
-
-    // Função auxiliar para comparar datas usando parsePtBrDate
-    // Assumindo que datasLeiloesA/B são string[] e o primeiro elemento é "DD/MM/YYYY"
-    const compararDatas = (datasLeiloesA?: string[], datasLeiloesB?: string[]): number => {
-      const stringDataA = datasLeiloesA?.[0];
-      const stringDataB = datasLeiloesB?.[0];
-
-      const dateObjA = parsePtBrDate(stringDataA);
-      const dateObjB = parsePtBrDate(stringDataB);
-
-      const timeA = dateObjA.getTime(); // getTime() em Invalid Date retorna NaN
-      const timeB = dateObjB.getTime();
-
-      if (isNaN(timeA) && isNaN(timeB)) return 0;
-      if (isNaN(timeA)) return 1; // NaNs (ou datas não parseáveis) no final
-      if (isNaN(timeB)) return -1;
-      
-      return timeA - timeB; // Ascendente (datas mais antigas primeiro)
+  
+    // Função auxiliar para comparar datas
+    const compararDatas = (datasLeiloesA?: Date[], datasLeiloesB?: Date[]): number => {
+      const dateObjA = datasLeiloesA?.[0];
+      const dateObjB = datasLeiloesB?.[0];
+  
+      console.log({
+        dateObjA,
+        dateObjB,
+      });
+  
+      // Verifica se ambos os objetos de data são válidos
+      if (dateObjA && dateObjB) {
+        return new Date(dateObjA).getTime() - new Date(dateObjB).getTime(); // Ascendente
+      }
+  
+      // Coloca datas inválidas ou ausentes no final
+      if (dateObjA) return -1;
+      if (dateObjB) return 1;
+  
+      return 0; // Ambos são inválidos ou ausentes
     };
-
+  
     if (filter === "valor") {
       imoveisParaOrdenar.sort((a, b) => {
-        // Assumindo que valor_avaliacao é uma string que representa um número.
-        // Se for de fato um número no seu model Imovel, pode simplificar.
-        const valorA = parseFloat(a.valor_avaliacao as string);
-        const valorB = parseFloat(b.valor_avaliacao as string);
-
+        const valorA = a.valor_avaliacao;
+        const valorB = b.valor_avaliacao;
+  
         let comparacao = 0;
         if (isNaN(valorA) && isNaN(valorB)) comparacao = 0;
         else if (isNaN(valorA)) comparacao = 1; // NaNs no final
         else if (isNaN(valorB)) comparacao = -1; // NaNs no final
         else comparacao = valorA - valorB;
-        
+  
         return crescente ? comparacao : comparacao * -1;
       });
     } else if (filter === "dataLeilao") {
       imoveisParaOrdenar.sort((a, b) => {
-        return crescente 
+        return crescente
           ? compararDatas(a.datas_leiloes, b.datas_leiloes) // Ascendente: datas mais antigas primeiro
           : compararDatas(b.datas_leiloes, a.datas_leiloes); // Descendente: datas mais recentes primeiro
       });
-    // Removida a lógica para filter === "tempoRestante"
     } else if (filter === null) {
       // Ordenação padrão quando nenhum filtro está ativo
-      // Se 'crescente' for false (inicial), ordena por mais recentes primeiro
       if (!crescente) {
         imoveisParaOrdenar.sort((a, b) => compararDatas(b.datas_leiloes, a.datas_leiloes));
       } else {
-        // Se 'crescente' for true (caso raro se filter só é null no início)
         imoveisParaOrdenar.sort((a, b) => compararDatas(a.datas_leiloes, b.datas_leiloes));
       }
     }
-    
+  
     setSortedImoveis(imoveisParaOrdenar);
   }, [fetchedImoveis, filter, crescente]);
 
