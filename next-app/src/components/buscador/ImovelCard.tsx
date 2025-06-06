@@ -8,6 +8,8 @@ export interface imovelProps {
   imovel: Imovel;
 }
 
+// ARRAY 
+const formaPagamento = ['financiamento', 'débito', 'crédito']
 export default function ImovelCard(props: imovelProps) {
   const { imovel } = props
   
@@ -42,6 +44,18 @@ export default function ImovelCard(props: imovelProps) {
           : "Não informado"}</p>
       </div>
       <div className="flex gap-1">
+        <p className="text-zinc-600">Pagamentos:</p> 
+        <div className="flex flex-wrap gap-1">
+          {
+            formaPagamento.map((forma) => (
+              <div className="flex items-center justify-center px-3 p-1 text-sm bg-secondary rounded-lg font-semibold text-white">
+                <p>{forma}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+      <div className="flex gap-1">
         <p className="text-zinc-600">Endereço:</p>
         <p className="text-zinc-800 font-semibold">{imovel.endereco}</p>
       </div>
@@ -50,7 +64,7 @@ export default function ImovelCard(props: imovelProps) {
           target="_blank"
           rel="noopener noreferrer"
         >
-        <Button variant="primary" size="default" className="" > 
+        <Button variant="primary" size="full" className="" > 
           <p className="font-semibold">Veja no site do leilão</p>
         </Button>
       </a>
