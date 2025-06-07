@@ -4,6 +4,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { FiltroProvider } from "@/context/FilterContext";
 import { SidebarProvider } from "@/context/SideBarContext";
+import { AuthProvider } from "@/context/AuthContext"; 
 
 const inter = Inter({ subsets: ["latin"]})
 
@@ -22,11 +23,13 @@ export default function RootLayout({
       <body
         className={`${inter.className} antialiased`}
       >
+      <AuthProvider>
         <FiltroProvider>
           <SidebarProvider>
             {children}
           </SidebarProvider>
         </FiltroProvider>  
+      </AuthProvider>
       </body>
     </html>
   );
