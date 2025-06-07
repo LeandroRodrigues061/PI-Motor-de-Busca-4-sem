@@ -3,7 +3,6 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { ReactNode } from "react";
 import { Imovel } from "@/data/models/Imovel";
 import estados from "@/data/constants/Estados";
-import { set } from "mongoose";
 
 interface Filtros {
   estado: string | null;

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model, CallbackError } from 'mongoose';
+import mongoose, { Schema, Document, Model, CallbackError, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   cargo: string;
+  favoritos: Types.ObjectId[]; // Adicionado o campo favoritos
   comparePassword: (password: string) => Promise<boolean>;  
 }
 
@@ -14,6 +15,7 @@ const UserSchema: Schema<IUser> = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   cargo: { type: String, required: true },
+  favoritos: [{ type: Types.ObjectId, ref: "Imovel" }], 
 });
 
 // Cria o hash da senha antes de salvar

@@ -41,7 +41,6 @@ const ImovelSchema = new Schema({
   tipoImovel: { type: String },
   endereco: { type: String },
   dataImovel: { type: Date},
-  favorito: { type: Boolean }, // Indica se o imóvel é favorito
 }, { collection: 'imoveis' }); // Associa explicitamente à coleção existente
 
 // Verifica se o modelo já existe para evitar recriação durante hot reload no Next.js
