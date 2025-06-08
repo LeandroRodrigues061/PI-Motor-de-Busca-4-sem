@@ -1,8 +1,9 @@
 'use client'
 import { useState } from "react"
+import { useAuth } from "@/context/AuthContext" 
 
 export default function SideBarUserConfig() {
-  
+  const { user } = useAuth() 
   const [option, setOption] = useState("favoritos")
   const modeFavorite = () => setOption("favoritos")
   
@@ -12,8 +13,8 @@ export default function SideBarUserConfig() {
         Aqui é o seu perfil
       </h2>
       <div className="flex flex-col gap-0.5">
-        <h1 className="text-zinc-900 text-2xl font-semibold">Nicolas Yanase</h1>
-        <p className="text-zinc-600">Analista de crédito Imobiliário</p>
+        <h1 className="text-zinc-900 text-2xl font-semibold">{user?.nome}</h1>
+        <p className="text-zinc-600">{user?.cargo}</p>
       </div>
 
       <span className="w-full h-[0.5px] my-3 rounded-2xl bg-zinc-300"></span>

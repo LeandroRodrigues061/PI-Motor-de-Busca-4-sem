@@ -1,22 +1,22 @@
 "use client";
 import Template from "@/components/layout/Template";
 import { useSidebar } from "@/context/SideBarContext";
-import { useEffect, useState, useMemo } from "react"; // Adicionei useMemo
+import { useEffect, useState, useMemo } from "react";
 import { IconSearch } from "@tabler/icons-react";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
-import { useAuth } from "@/context/AuthContext"; // 1. IMPORTE O HOOK useAuth
+import { useAuth } from "@/context/AuthContext"; 
 import { Imovel } from "@/data/models/Imovel";
 
 export default function Perfil() {
   const { setTipo } = useSidebar();
   const { user, isLoading, isAuthenticated } = useAuth(); 
+  const [busca, setBusca] = useState("");
+  const [imoveisFavoritos, setImoveisFavoritos] = useState<Imovel[]>([]); 
+
   useEffect(() => {
     setTipo("user_config");
   }, [setTipo]); 
-
-  const [busca, setBusca] = useState("");
-  const [imoveisFavoritos, setImoveisFavoritos] = useState<Imovel[]>([]); 
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user?.id) {
@@ -27,10 +27,10 @@ export default function Perfil() {
             return console.log(`Erro na API: ${response.status}`);
           }
           const data = await response.json();
-          setImoveisFavoritos(data.favoritos || []); // Garante que seja um array
+          setImoveisFavoritos(data.favoritos || []); 
         } catch (error) {
           console.error("Erro ao buscar favoritos:", error);
-          setImoveisFavoritos([]); // Limpa em caso de erro para evitar problemas
+          setImoveisFavoritos([]); 
         }
       };
 
@@ -38,44 +38,16 @@ export default function Perfil() {
     } else if (!isLoading && !isAuthenticated) {
       setImoveisFavoritos([]);
     }
-  }, [user, isLoading, isAuthenticated]); // Dependências corretas
+  }, [user, isLoading, isAuthenticated]); 
 
   const imoveisPesquisados = useMemo(() => {
     if (!busca) {
-      return imoveisFavoritos; // Se não houver busca, retorna todos os favoritos
+      return imoveisFavoritos; 
     }
     return imoveisFavoritos.filter((imovel) => {
-      // Adapte esta lógica de filtro conforme necessário.
-      // Exemplo: buscando no título do imóvel (supondo que imovel tenha uma propriedade 'titulo')
       return imovel.endereco?.toLowerCase().includes(busca.toLowerCase());
     });
   }, [busca, imoveisFavoritos]);
-
-  // 5. ADICIONE TRATAMENTO PARA LOADING E NÃO AUTENTICADO
-  if (isLoading) {
-    return (
-      <Template>
-        <div className="flex justify-center items-center h-screen">
-          <p>Carregando seus favoritos...</p>
-        </div>
-      </Template>
-    );
-  }
-
-  if (!isAuthenticated) {
-    // Idealmente, você poderia redirecionar para o login aqui ou mostrar um botão para login
-    return (
-      <Template>
-        <div className="flex flex-col justify-center items-center h-screen p-8 text-center">
-          <h2 className="text-2xl font-semibold mb-4">Acesso Negado</h2>
-          <p className="text-zinc-600">
-            Você precisa estar logado para ver seus imóveis favoritos.
-          </p>
-          {/* Você pode adicionar um botão para redirecionar ao login aqui */}
-        </div>
-      </Template>
-    );
-  }
 
   return (
     <Template>
@@ -96,7 +68,6 @@ export default function Perfil() {
         <div className="flex items-center justify-between my-1">
           <p className="text-zinc-500">
             Foram encontrados{" "}
-            {/* AGORA USA imoveisPesquisados.length */}
             <span className="font-semibold">{imoveisPesquisados.length}</span>{" "}
             imóveis
           </p>
@@ -113,7 +84,6 @@ export default function Perfil() {
           </div>
         </div>
         <div className="flex flex-col gap-6">
-          {/* AGORA USA imoveisPesquisados */}
           {imoveisPesquisados.length > 0 ? (
             imoveisPesquisados.map((imovel) => (
               <ImovelCard key={imovel._id} imovel={imovel} />
@@ -127,7 +97,7 @@ export default function Perfil() {
                 {busca ? "Tente refinar sua pesquisa ou explore mais imóveis para adicionar aos seus favoritos." : "Explore nossos imóveis e adicione os que mais gostar aos seus favoritos!"}
               </p>
               <Image
-                src={"/img/search-house.png"} // Verifique se este caminho está correto
+                src={"/img/search-house.png"}
                 alt="imóvel não encontrado"
                 width={400}
                 height={150}
