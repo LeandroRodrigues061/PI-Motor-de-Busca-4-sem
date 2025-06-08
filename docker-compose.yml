@@ -14,7 +14,12 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s 
+      timeout: 5s   
+      retries: 5    
+      start_period: 30s 
   next-app:
     build:
       context: ./next-app
@@ -22,8 +27,9 @@ services:
     volumes:
       - ./next-app:/next-app
       - /next-app/node_modules
-    depends_on:
-      - mongo
+    depends_on: 
+      mongo:
+        condition: service_healthy 
     environment:
       MONGO_URI: mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin
     ports:
@@ -35,8 +41,9 @@ services:
   scrapers:
     build: ./scrapers
     container_name: scrapers
-    depends_on:
-      - mongo
+    depends_on: 
+      mongo:
+        condition: service_healthy 
     volumes:
       - ./scrapers:/app
     networks:
