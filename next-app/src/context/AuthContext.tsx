@@ -5,14 +5,13 @@ import { jwtDecode } from 'jwt-decode';
 import { setCookie, parseCookies, destroyCookie } from 'nookies';
 import { useRouter } from 'next/navigation'; 
 
-// Tipagem do payload do seu JWT
 type UserPayload = {
   id: string;
   nome: string;
   email: string;
+  cargo: string;
 };
 
-// Tipagem do valor do Contexto
 type AuthContextType = {
   user: UserPayload | null;
   isAuthenticated: boolean;
@@ -21,10 +20,8 @@ type AuthContextType = {
   signOut: () => void;
 };
 
-// Criando o Contexto
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Criando o Provider
 type AuthProviderProps = {
   children: ReactNode;
 };
@@ -32,7 +29,7 @@ type AuthProviderProps = {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserPayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter(); // Agora isso vai funcionar corretamente
+  const router = useRouter(); 
 
   useEffect(() => {
     const cookies = parseCookies();
@@ -78,7 +75,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
-// Hook customizado
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

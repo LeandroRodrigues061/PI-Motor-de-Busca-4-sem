@@ -28,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       id: user._id,
       email: user.email,
       nome: user.nome,
+      cargo: user.cargo,
     };
 
   if (!isPasswordValid) {
