@@ -1,9 +1,9 @@
 "use client";
 
 import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import { setCookie, parseCookies, destroyCookie } from 'nookies';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 
 type UserPayload = {
   id: string;
@@ -18,6 +18,9 @@ type AuthContextType = {
   isLoading: boolean;
   signIn: (token: string) => void;
   signOut: () => void;
+  favorites: string[]; // IDs dos imóveis favoritos
+  addFavorite: (imovelId: string) => Promise<void>;
+  removeFavorite: (imovelId: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,8 +31,9 @@ type AuthProviderProps = {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserPayload | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter(); 
+  const router = useRouter();
 
   useEffect(() => {
     const cookies = parseCookies();
@@ -39,6 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const decodedUser: UserPayload = jwtDecode(token);
         setUser(decodedUser);
+        fetchFavorites(decodedUser.id);
       } catch (error) {
         console.error("Token inválido ou expirado, limpando...", error);
         destroyCookie(null, 'auth.token', { path: '/' });
@@ -47,16 +52,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(false);
   }, []);
 
+  const fetchFavorites = async (userId: string) => {
+    try {
+      const res = await fetch(`/api/favoritos/buscarFavoritos?userId=${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        const favoritosString = data.favoritos.map((idObj: any) => {
+          if (idObj.toHexString) {
+            return idObj.toHexString();
+          }
+          if (idObj._id) {
+            return idObj._id.toString();
+          }
+          return idObj.toString();
+        });
+        setFavorites(favoritosString);
+        console.log(favoritosString, "Favoritos atualizados com sucesso!");
+      } else {
+        const errorData = await res.json();
+        console.error("Erro ao buscar favoritos:", errorData.message);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar favoritos:", error);
+    }
+  };
+
   const signIn = (token: string) => {
     try {
       const decodedUser: UserPayload = jwtDecode(token);
-      
       setCookie(null, 'auth.token', token, {
         maxAge: 60 * 60 * 24 * 30,
         path: '/',
       });
       setUser(decodedUser);
-      router.push('/buscador'); 
+      fetchFavorites(decodedUser.id);
+      router.push('/buscador');
     } catch (error) {
       console.error("Erro ao decodificar token no login:", error);
     }
@@ -65,11 +95,59 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = () => {
     destroyCookie(null, 'auth.token', { path: '/' });
     setUser(null);
+    setFavorites([]);
     router.push('/login');
   };
 
+  const addFavorite = async (imovelId: string) => {
+    if (!user) return;
+    try {
+      const res = await fetch('/api/favoritos/adicionar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imovelId, userId: user.id }),
+      });
+      if (res.ok) {
+        await fetchFavorites(user.id);
+      } else {
+        const errorData = await res.json();
+        console.error("Erro ao adicionar favorito:", errorData.message);
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar favorito:", error);
+    }
+  };
+  
+  const removeFavorite = async (imovelId: string) => {
+    if (!user) return;
+    try {
+      const res = await fetch('/api/favoritos/remover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imovelId, userId: user.id }),
+      });
+      if (res.ok) {
+        await fetchFavorites(user.id);
+      } else {
+        const errorData = await res.json();
+        console.error("Erro ao remover favorito:", errorData.message);
+      }
+    } catch (error) {
+      console.error("Erro ao remover favorito:", error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, signIn, signOut }}>
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      signIn,
+      signOut,
+      favorites,
+      addFavorite,
+      removeFavorite,
+    }}>
       {children}
     </AuthContext.Provider>
   );
