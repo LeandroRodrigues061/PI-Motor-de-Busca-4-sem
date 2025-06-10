@@ -4,10 +4,16 @@ import { useState, useEffect } from "react";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
 import SubFiltros from "@/components/buscador/SubFiltros";
-import { Imovel } from "@/data/models/Imovel";
 import { useFiltro } from "@/context/FilterContext";
+import { useSidebar } from "@/context/SideBarContext";
+import { IconArrowRight } from "@tabler/icons-react";
 
 export default function Buscador() {
+  const {setTipo} = useSidebar()
+  useEffect(() => {
+    setTipo("filter");
+  }, []); 
+  const { toggleSidebar } = useSidebar()
   const [filter, setFilter] = useState<"valor" | "dataLeilao" | null>(null);
   const [crescente, setCrescente] = useState(false); 
   const { imoveis: fetchedImoveis } = useFiltro();
@@ -89,7 +95,12 @@ export default function Buscador() {
 
   return (
     <Template>
-      <section className="flex flex-col p-8 gap-4">
+      <section className="w-full flex flex-col p-8 gap-4">
+        <div className="w-full md:hidden"> 
+          <button onClick={toggleSidebar} className="size-10 flex items-center justify-center bg-white shadow-lg cursor-pointer rounded-full text-zinc-600">
+            <IconArrowRight />
+          </button>
+        </div>
         <div className="flex gap-2 items-center">
           <div className="w-1 h-6 bg-primary rounded-lg" />
           <h1 className="text-3xl font-semibold text-zinc-900">Buscador</h1>

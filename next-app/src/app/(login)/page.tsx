@@ -102,8 +102,8 @@ export default function Login() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <div className="w-full h-screen grid grid-cols-2 bg-white">
-        <article className="flex flex-col items-center justify-center pb-40 bg-[url('/img/background-image.png')] bg-no-repeat bg-center">
+      <div className="w-full h-screen flex justify-center md:grid grid-cols-2 bg-white">
+        <article className="hidden md:flex flex-col items-center justify-center pb-40 bg-[url('/img/background-image.png')] bg-no-repeat bg-center">
           <div className="flex flex-col justify-center items-center w-[500px] text-center">
             <Image
               onClick={loginMode}
@@ -132,7 +132,7 @@ export default function Login() {
             className={`${
               mode === "login"
                 ? "hidden"
-                : "w-full flex items-center justify-start px-10"
+                : "w-full flex items-center justify-start md:px-8 lg:px-10"
             }`}
           >
             <button

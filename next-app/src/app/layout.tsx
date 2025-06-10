@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import { FiltroProvider } from "@/context/FilterContext";
 import { SidebarProvider } from "@/context/SideBarContext";
 import { AuthProvider } from "@/context/AuthContext"; 
+import { PerfilOptionProvider } from "@/context/PerfilOptionContext";
 
 const inter = Inter({ subsets: ["latin"]})
 
@@ -26,7 +27,9 @@ export default function RootLayout({
       <AuthProvider>
         <FiltroProvider>
           <SidebarProvider>
-            {children}
+            <PerfilOptionProvider>
+              {children}
+            </PerfilOptionProvider>
           </SidebarProvider>
         </FiltroProvider>  
       </AuthProvider>

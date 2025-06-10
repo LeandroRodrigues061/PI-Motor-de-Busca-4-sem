@@ -6,7 +6,8 @@ const buttonVariants = tv({
   
   variants: {
     variant: {
-      primary: 'text-white bg-primary rounded-xl p-4 transition duration-300 hover:bg-primary-hover hover:border-zinc-200 hover:shadow-[0_0_10px_1px_#98C6FF]',
+      primary: 'text-white bg-primary rounded-xl p-4 transition duration-300 hover:bg-primary-hover hover:border-zinc-200 hover:shadow-[0_0_10px_1px_#98C6FF] mt-3',
+      secondary: 'text-primary bg-white border border-primary rounded-xl p-4 transition duration-300  hover:border-zinc-200 hover:shadow-[0_0_10px_1px_#98C6FF]',
       
     },
     size:{
