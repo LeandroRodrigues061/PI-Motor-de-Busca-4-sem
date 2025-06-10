@@ -48,15 +48,24 @@ export default function ImovelCard({ imovel }: imovelProps) {
   };
 
   return (
-    <div key={imovel._id} className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-start w-[900px] h-[320px] flex gap-8">
-      <div className="relative rounded-xl w-72 h-52">
-        <Image src={imovel.imagem || "/img/search-house.png"} alt="imagem da casa" fill className="object-contain" />
+    <div key={imovel._id} className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-center lg:items-start md:w-full lg:w-[700px] xl:w-[900px] 2xl:w-[1000px] flex flex-col lg:flex-row gap-6 relative">
+      <div className="relative rounded-xl w-full h-72 lg:w-72 lg:h-52 overflow-hidden">
+        <Image src={imovel.imagem || "/img/search-house.png"} alt="imagem da casa" fill className="object-cover lg:object-contain " />
+        <button 
+          onClick={toggleFavorite}
+          className="lg:hidden absolute size-8 flex items-center justify-center bg-zinc-200 rounded-lg right-2 top-2 cursor-pointer">
+          {isFavorite ? (
+            <IconHeart size={30} className="text-primary fill-primary" />
+          ) : (
+            <IconHeart size={30} className="text-gray-500 hover:text-primary" />
+          )}
+        </button>
       </div>
       <div className="flex flex-col gap-[7px] w-full">
       <div className="flex gap-1">
         <p className="text-zinc-600">Data do leilão:</p>
         {imovel.datas_leiloes.map((data, index) => (
-             <span key={index}>  
+             <span key={index}  className="text-zinc-800 font-semibold">  
           {new Date(data).toLocaleDateString("pt-BR", {
           day: "2-digit",
           month: "2-digit",
@@ -89,6 +98,8 @@ export default function ImovelCard({ imovel }: imovelProps) {
            })
           : " Não informado"}</p>
       </div>
+      {/* 
+      ::: FORMAS DE PAGAMENTO :::
       <div className="flex gap-1">
         <p className="text-zinc-600">Pagamentos:</p> 
         <div className="flex flex-wrap gap-1">
@@ -101,11 +112,28 @@ export default function ImovelCard({ imovel }: imovelProps) {
             ))
           }
         </div>
-      </div>
+      </div> */}
       <div className="flex gap-1">
         <p className="text-zinc-600">Endereço:</p>
         <p className="text-zinc-800 font-semibold">{imovel.endereco}</p>
       </div>
+      <div className="flex lg:hidden gap-1 items-center">
+          <p className="text-zinc-600">Banco:</p>
+          {bancos.map((banco) =>
+            banco.name === imovel.banco ? (
+              <div key={banco.id} className="size-8 rounded-xl relative">
+                <Image
+                  src={banco.image}
+                  alt={banco.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div key={banco.id} className="hidden "></div>
+            )
+          )}
+        </div>
       <Button variant="primary" size="default" className="">
         <a
           href={imovel.link}
@@ -117,7 +145,7 @@ export default function ImovelCard({ imovel }: imovelProps) {
         </a>
       </Button>
     </div>
-    <div className="flex flex-col items-center justify-between h-full">
+    <div className="hidden lg:flex flex-col items-center justify-between h-full">
         {bancos.map((banco) =>
           banco.name === imovel.banco ? (
             <div key={banco.id} className="size-12 rounded-xl relative">
@@ -127,20 +155,19 @@ export default function ImovelCard({ imovel }: imovelProps) {
             <div key={banco.id} className="hidden"></div>
           )
         )}
-
-        <button
-          className="cursor-pointer mt-auto p-2 disabled:opacity-50"
+      </div>
+      <button
+          className="hidden lg:flex absolute bottom-6 right-6 cursor-pointer mt-auto p-2 disabled:opacity-50"
           onClick={toggleFavorite}
           disabled={isLoadingFavorite}
           aria-label={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
         >
           {isFavorite ? (
-            <IconHeart size={30} className="text-red-500 fill-red-500" />
+            <IconHeart size={30} className="text-primary fill-primary" />
           ) : (
-            <IconHeart size={30} className="text-gray-400 hover:text-red-400" />
+            <IconHeart size={30} className="text-gray-400 hover:text-primary" />
           )}
         </button>
-      </div>
     </div>
   );
 }

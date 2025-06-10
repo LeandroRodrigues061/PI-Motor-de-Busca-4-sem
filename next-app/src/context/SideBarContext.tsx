@@ -6,22 +6,22 @@ type SidebarType = "filter" | "user_config" | null;
 interface SidebarContextProps {
   tipo: SidebarType;
   setTipo: (tipo: SidebarType) => void;
-  isMobile: boolean | undefined
-  setIsMobile: (tipo: boolean) => void
-  toggleSideBar: (tipo: boolean) => void
+  isOpenSidebar: boolean ;
+  setIsOpenSidebar: (tipo: boolean) => void;
+  toggleSidebar: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
 export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
   const [tipo, setTipo] = useState<SidebarType>("filter");
-  const [isMobile, setIsMobile] = useState<boolean | undefined>(false)
-  const toggleSideBar = () => {
-    setIsMobile(!isMobile)
+  const [isOpenSidebar, setIsOpenSidebar] = useState<boolean>(false)
+  const toggleSidebar = () => {
+    setIsOpenSidebar(!isOpenSidebar)
   }
 
   return (
-    <SidebarContext.Provider value={{ tipo, setTipo, isMobile, setIsMobile, toggleSideBar }}>
+    <SidebarContext.Provider value={{ tipo, setTipo, toggleSidebar, isOpenSidebar, setIsOpenSidebar  }}>
       {children}
     </SidebarContext.Provider>
   );
