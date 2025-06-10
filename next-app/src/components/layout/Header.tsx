@@ -35,7 +35,13 @@ export default function Header() {
                 <IconUser size={20} />
                 <p>Perfil</p>
               </Link>
-              <Link href={"/logout"} className="flex gap-1 text-zinc-600 transition-colors duration-300 hover:text-red-500 items-center">
+              <Link href="#" onClick={(e) => {
+                e.preventDefault(); // Impede o comportamento padrão do link
+                localStorage.removeItem("authToken"); // Remove o token de autenticação
+                sessionStorage.clear(); // Limpa dados da sessão, se necessário
+                window.location.href = "/"; // Redireciona para a página de login
+              }}
+              className="flex gap-1 text-zinc-600 transition-colors duration-300 hover:text-red-500 items-center">
                 <IconLogout size={20} />
                 <p>Logout</p>
               </Link>

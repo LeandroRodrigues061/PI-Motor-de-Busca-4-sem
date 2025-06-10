@@ -1,10 +1,13 @@
 "use client";
 import Template from "@/components/layout/Template";
 import { useSidebar } from "@/context/SideBarContext";
-import { useEffect, useState } from "react";
-import { IconArrowLeft, IconArrowLeft, IconSearch } from "@tabler/icons-react";
+import { IconArrowLeft, IconSearch } from "@tabler/icons-react";
+import { useEffect, useState, useMemo } from "react";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext"; 
+import { Imovel } from "@/data/models/Imovel";
+
 export default function Perfil() {
   const { setTipo, toggleSideBar } = useSidebar();
   const setUserConfigSidebar = () => setTipo("user_config");
@@ -12,21 +15,45 @@ export default function Perfil() {
     setUserConfigSidebar();
   }, []);
 
+  const { user, isLoading, isAuthenticated } = useAuth(); 
   const [busca, setBusca] = useState("");
-  const [imoveisPesquisados, setImoveisPesquisados] = useState(imoveis);
-  
+  const [imoveisFavoritos, setImoveisFavoritos] = useState<Imovel[]>([]); 
+
   useEffect(() => {
-    const buscaLower = busca.toLowerCase();
+    setTipo("user_config");
+  }, [setTipo]); 
 
-    const pesquisados = imoveis.filter(
-      (imovel) =>
-        imovel.endereco.toLowerCase().includes(buscaLower) ||
-        imovel.numeroImovel.toString().includes(buscaLower) ||
-        imovel.banco.toLowerCase().includes(buscaLower)
-    );
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user?.id) {
+      const fetchFavoritos = async () => {
+        try {
+          const response = await fetch(`/api/favoritos/buscarFavoritos?userId=${user.id}`);
+          if (!response.ok) {
+            return console.log(`Erro na API: ${response.status}`);
+          }
+          const data = await response.json();
+          setImoveisFavoritos(data.favoritos || []); 
+        } catch (error) {
+          console.error("Erro ao buscar favoritos:", error);
+          setImoveisFavoritos([]); 
+        }
+      };
 
-    setImoveisPesquisados(pesquisados);
-  }, [busca]);
+      fetchFavoritos();
+    } else if (!isLoading && !isAuthenticated) {
+      setImoveisFavoritos([]);
+    }
+  }, [user, isLoading, isAuthenticated]); 
+
+  const imoveisPesquisados = useMemo(() => {
+    if (!busca) {
+      return imoveisFavoritos; 
+    }
+    return imoveisFavoritos.filter((imovel) => {
+      return imovel.endereco?.toLowerCase().includes(busca.toLowerCase());
+    });
+  }, [busca, imoveisFavoritos]);
+
   return (
     <Template>
       <section className="flex flex-col p-8 gap-4">
@@ -67,18 +94,17 @@ export default function Perfil() {
           </div>
         </div>
         <div className="flex flex-col gap-6">
-          {imoveisPesquisados.length !== 0 ? (
+          {imoveisPesquisados.length > 0 ? (
             imoveisPesquisados.map((imovel) => (
-              <ImovelCard key={imovel.id} imovel={imovel} />
+              <ImovelCard key={imovel._id} imovel={imovel} />
             ))
           ) : (
             <div className="w-[900px] flex flex-col py-2 px-20 items-center justify-center gap-4">
               <h3 className="text-3xl text-zinc-900 font-semibold">
-                Ops! Nenhum resultado encontrado
+                {busca ? "Ops! Nenhum resultado para sua busca" : "Você ainda não tem favoritos"}
               </h3>
               <p className="text-zinc-600 text-center">
-                Não há nenhum imóvel que com base na sua busca. Pesquise
-                novamente para encontrar seus imóveis.
+                {busca ? "Tente refinar sua pesquisa ou explore mais imóveis para adicionar aos seus favoritos." : "Explore nossos imóveis e adicione os que mais gostar aos seus favoritos!"}
               </p>
               <Image
                 src={"/img/search-house.png"}

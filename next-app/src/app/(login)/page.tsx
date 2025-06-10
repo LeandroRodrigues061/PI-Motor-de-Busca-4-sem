@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import AuthForm from "@/components/login/AuthForm";
 import ModalForm from "@/components/login/ModalForm";
 import toast, { Toaster } from "react-hot-toast";
+import { useAuth } from '@/context/AuthContext'; 
 
 export default function Login() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isEmailCheck, setIsEmailCheck] = useState(false);
   const [mode, setMode] = useState("login");
+  const { signIn } = useAuth();
 
   const forgotPasswordMode = () => {
     setMode("forgotPassword");
@@ -33,8 +35,8 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem('authToken', data.token);
+      if (res.ok && data.token) {
+        signIn(data.token); 
         toast.success(data.message || "Login realizado com sucesso!"); 
         return router.push("/buscador");
       }
