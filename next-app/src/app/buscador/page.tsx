@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
 import SubFiltros from "@/components/buscador/SubFiltros";
-import { Imovel } from "@/data/models/Imovel";
 import { useFiltro } from "@/context/FilterContext";
 
 export default function Buscador() {
