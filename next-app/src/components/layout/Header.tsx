@@ -17,11 +17,11 @@ export default function Header() {
         <div className="flex gap-9 items-center justify-end">
           <Link href={"/buscador"} className="flex gap-1 text-zinc-600 transition-colors duration-300 hover:text-primary">
             <IconSearch />
-            <p>Buscar</p>
+            <p className="hidden md:flex">Buscar</p>
           </Link>
           <Link href={"/perfil"} className="flex gap-1 text-zinc-600 transition-colors duration-300 hover:text-primary">
             <IconHeart />
-            <p>Favoritos</p>
+            <p className="hidden md:flex">Favoritos</p>
           </Link>
           <button onClick={toggleModal} className="cursor-pointer">
             <IconUserCircle size={40} className="text-zinc-600 transition-colors duration-300 hover:text-primary"/>
