@@ -136,10 +136,7 @@ export default function Buscador() {
               />
             </div>
           )}
-        </div>
-
-        {/* Botões de paginação */}
-        <div className="pagination flex justify-center gap-2 mt-4">
+          <div className="pagination flex justify-center gap-2 mt-4 w-3xl">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
@@ -166,6 +163,36 @@ export default function Buscador() {
             Próximo
           </button>
         </div>
+        </div>
+
+        {/* Botões de paginação
+        <div className="pagination flex justify-center gap-2 mt-4 w-3xl">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-4 py-2 border rounded-lg bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            Anterior
+          </button>
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              onClick={() => handlePageChange(index + 1)}
+              className={`px-4 py-2 border rounded-lg ${
+                currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 border rounded-lg bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            Próximo
+          </button>
+        </div> */}
       </section>
     </Template>
   );

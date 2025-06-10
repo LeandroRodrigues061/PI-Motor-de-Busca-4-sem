@@ -13,7 +13,7 @@ const bancos: Banco[] = [
   },
   {
     id:3,
-    name: "Caixa",
+    name: "CAIXA",
     image: "/img/caixa.svg", 
   },
   {
