@@ -67,7 +67,7 @@ export default function Config() {
               <input
                 type="text"
                 placeholder={user?.nome}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setNome(e.target.value)}
                 value={nome}
                 className="outline-none text-zinc-500 w-full"
               />
@@ -76,9 +76,9 @@ export default function Config() {
             <Field title="Cargo">
               <IconMail className="text-zinc-400" />
               <input
-                type="email"
+                type="text"
                 placeholder="Digite seu email"
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setCargo(e.target.value)}
                 value={cargo}
                 className="outline-none text-zinc-500 w-full"
               />
