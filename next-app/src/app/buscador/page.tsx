@@ -22,13 +22,18 @@ export default function Buscador() {
   const itemsPerPage = 15; // Número de imóveis por página
 
   const handleFiltro = (tipo: "valor" | "dataLeilao" | null) => {
-    if (filter === tipo) {
-      setCrescente(!crescente);
+  if (filter === tipo) {
+    if (crescente) {
+      setCrescente(false); // 2º clique → decrescente
     } else {
-      setFilter(tipo);
-      setCrescente(true);
+      setFilter(null);     // 3º clique → desativa filtro
+      setCrescente(true);  // reseta o estado para o próximo uso
     }
-  };
+  } else {
+    setFilter(tipo);       // 1º clique → novo filtro ativado
+    setCrescente(true);    
+  }
+};
 
   useEffect(() => {
     let imoveisParaOrdenar = [...fetchedImoveis];
