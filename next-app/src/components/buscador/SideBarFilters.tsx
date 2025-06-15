@@ -108,7 +108,7 @@ export default function SidebarFilters() {
 
         {/* Bairros */}
         {cidadeSelecionada && (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 h-48 overflow-y-auto">
             <h2 className="text-xl font-semibold text-zinc-900">Bairro</h2>
             {bairrosDisponiveis.map((bairro: string) => (
               <label key={bairro} className="flex items-center gap-2">
@@ -136,10 +136,7 @@ export default function SidebarFilters() {
           <select
             value={tipoImovel}
             onChange={(e) => setTipoImovel(e.target.value)}
-            disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600" ${
-              !estadoSelecionado ? "cursor-no-drop " : ""
-            }`}
+            className={`border rounded-xl p-2 text-zinc-600 `}
           >
             <option value="indiferente">Indiferente</option>
             <option value="casa">Casa</option>
@@ -156,10 +153,7 @@ export default function SidebarFilters() {
           <select
             value={valor}
             onChange={(e) => setValor(e.target.value)}
-            disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600 text-sm ${
-              !estadoSelecionado ? "cursor-no-drop " : ""
-            }`}
+            className={`border rounded-xl p-2 text-zinc-600 text-sm`}
           >
             <option className="text-xl" value="">
               Não especificado
@@ -187,7 +181,6 @@ export default function SidebarFilters() {
             <input
               type="checkbox"
               value={banco.name}
-              disabled={!estadoSelecionado}
               checked={bancosSelecionados.includes(banco.name)}
               onChange={() => {
                 setBancosSelecionados((prev) =>
@@ -297,10 +290,7 @@ export default function SidebarFilters() {
           <select
             value={tipoImovel}
             onChange={(e) => setTipoImovel(e.target.value)}
-            disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600" ${
-              !estadoSelecionado ? "cursor-no-drop " : ""
-            }`}
+            className={`border rounded-xl p-2 text-zinc-600" `}
           >
             <option value="indiferente">Indiferente</option>
             <option value="casa">Casa</option>
@@ -317,10 +307,7 @@ export default function SidebarFilters() {
           <select
             value={valor}
             onChange={(e) => setValor(e.target.value)}
-            disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600 text-sm ${
-              !estadoSelecionado ? "cursor-no-drop " : ""
-            }`}
+            className={`border rounded-xl p-2 text-zinc-600 text-sm `}
           >
             <option className="text-xl" value="">
               Não especificado
@@ -348,7 +335,6 @@ export default function SidebarFilters() {
             <input
               type="checkbox"
               value={banco.name}
-              disabled={!estadoSelecionado}
               checked={bancosSelecionados.includes(banco.name)}
               onChange={() => {
                 setBancosSelecionados((prev) =>
