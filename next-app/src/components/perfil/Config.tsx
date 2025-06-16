@@ -10,7 +10,7 @@ import {
 } from "@tabler/icons-react";
 import Image from "next/image";
 import { useState } from "react";
-import toast, {Toast}from "react-hot-toast";
+import toast, {Toaster}from "react-hot-toast";
 
 export default function Config() {
   const { user } = useAuth();
@@ -60,6 +60,7 @@ export default function Config() {
 
   return (
     <div className="flex flex-col gap-4">
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="flex gap-2 items-center">
         <div className="w-1 h-6 bg-primary rounded-lg" />
         <h1 className="text-3xl font-semibold text-zinc-900">
