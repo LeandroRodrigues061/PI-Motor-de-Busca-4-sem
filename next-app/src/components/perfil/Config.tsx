@@ -3,9 +3,6 @@ import { Button } from "@/components/Button";
 import Field from "@/components/login/Field";
 import { useAuth } from "@/context/AuthContext";
 import {
-  IconArrowAutofitLeft,
-  IconArrowAutofitLeftFilled,
-  IconArrowLeft,
   IconEye,
   IconEyeClosed,
   IconLock,
@@ -13,6 +10,7 @@ import {
 } from "@tabler/icons-react";
 import Image from "next/image";
 import { useState } from "react";
+import toast, {Toaster}from "react-hot-toast";
 
 export default function Config() {
   const { user } = useAuth();
@@ -33,8 +31,36 @@ export default function Config() {
     }
   };
 
+  const handleSave = async () => {
+    try {
+      const response = await fetch("/api/auth/alterarInfo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: user?.id, // Certifique-se de que o ID do usuário está disponível
+          nome,
+          cargo,
+          email,
+          senha: password,
+        }),
+      });
+      if (response.ok) {
+        toast.success("Informações atualizadas com sucesso!");
+      } else {
+        const errorData = await response.json();
+        toast.error(`Erro ao atualizar informações: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Erro ao salvar alterações:", error);
+      toast.error("Ocorreu um erro ao salvar as alterações.");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="flex gap-2 items-center">
         <div className="w-1 h-6 bg-primary rounded-lg" />
         <h1 className="text-3xl font-semibold text-zinc-900">
@@ -72,12 +98,11 @@ export default function Config() {
                 className="outline-none text-zinc-500 w-full"
               />
             </Field>
-
             <Field title="Cargo">
               <IconMail className="text-zinc-400" />
               <input
                 type="text"
-                placeholder="Digite seu email"
+                placeholder="Digite seu cargo"
                 onChange={(e) => setCargo(e.target.value)}
                 value={cargo}
                 className="outline-none text-zinc-500 w-full"
@@ -97,7 +122,7 @@ export default function Config() {
               <div className="flex flex-1 gap-1">
                 <IconLock className="text-zinc-400" />
                 <input
-                  type={type}
+                  type='password'
                   placeholder="Digite seu senha"
                   onChange={(e) => setPassword(e.target.value)}
                   value={password}
@@ -114,7 +139,7 @@ export default function Config() {
               </button>
             </Field>
           </div>
-          <Button variant="primary" className="">
+          <Button onClick={handleSave} variant="primary" className="">
             Salvar alterações
           </Button>
         </div>

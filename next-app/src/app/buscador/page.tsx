@@ -8,6 +8,7 @@ import { useFiltro } from "@/context/FilterContext";
 import { useSidebar } from "@/context/SideBarContext";
 import { IconArrowRight } from "@tabler/icons-react";
 import Paginacao from "@/components/buscador/Paginacao";
+import { Imovel } from "@/data/models/Imovel";
 
 export default function Buscador() {
   const { setTipo } = useSidebar();
@@ -97,7 +98,6 @@ export default function Buscador() {
   const endIndex = startIndex + itemsPerPage;
   const currentImoveis = sortedImoveis.slice(startIndex, endIndex);
 
-  // Calcular o número total de páginas
   const totalPages = Math.ceil(sortedImoveis.length / itemsPerPage);
 
   return (
