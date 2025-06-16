@@ -5,6 +5,7 @@ WORKDIR /next-app
 COPY package*.json ./
 RUN npm install
 
+
 # O COPY . . pode ser mantido, mas será sobrescrito pelo volume no compose
 COPY . .
 

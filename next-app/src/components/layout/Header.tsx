@@ -32,7 +32,7 @@ export default function Header() {
 
         {
           isOpen &&  (
-            <div className="w-28 rounded-xl p-4 border border-zinc-200 bg-white flex flex-col gap-2 mt-8 justify-center items-start absolute top-12 right-0 transition-all animate-fade-in-down ">
+            <div className="w-28 rounded-xl p-4 border border-zinc-200 bg-white flex flex-col gap-2 mt-8 justify-center items-start absolute top-12 right-0 transition-all animate-fade-in-down z-50 shadow-lg">
               <Link href={"/perfil"} className="flex gap-1 text-zinc-600 transition-colors duration-300 hover:text-primary items-center">
                 <IconUser size={20} />
                 <p>Perfil</p>
