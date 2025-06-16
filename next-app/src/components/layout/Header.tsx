@@ -25,7 +25,7 @@ export default function Header() {
             <IconHeart />
             <p className="hidden md:flex">Favoritos</p>
           </Link>
-          <button onClick={toggleModal} className="cursor-pointer flex items-center justify-center p-1 bg-amber-200 z-10">
+          <button onClick={toggleModal} className="cursor-pointer flex items-center justify-center p-1 z-10">
             <IconUserCircle size={40} className="text-zinc-600 transition-colors duration-300 hover:text-primary"/>
           </button>
         </div>
