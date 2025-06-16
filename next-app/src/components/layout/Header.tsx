@@ -25,14 +25,14 @@ export default function Header() {
             <IconHeart />
             <p className="hidden md:flex">Favoritos</p>
           </Link>
-          <button onClick={toggleModal} className="cursor-pointer flex items-center justify-center p-1 bg-amber-200 z-10">
+          <button onClick={toggleModal} className="cursor-pointer flex items-center justify-center p-1 z-10">
             <IconUserCircle size={40} className="text-zinc-600 transition-colors duration-300 hover:text-primary"/>
           </button>
         </div>
 
         {
           isOpen &&  (
-            <div className="w-28 rounded-xl p-4 border border-zinc-200 bg-white flex flex-col gap-2 mt-8 justify-center items-start absolute top-12 right-0 transition-all animate-fade-in-down ">
+            <div className="w-28 rounded-xl p-4 border border-zinc-200 bg-white flex flex-col gap-2 mt-8 justify-center items-start absolute top-12 right-0 transition-all animate-fade-in-down z-50 shadow-lg">
               <Link href={"/perfil"} className="flex gap-1 text-zinc-600 transition-colors duration-300 hover:text-primary items-center">
                 <IconUser size={20} />
                 <p>Perfil</p>
