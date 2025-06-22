@@ -3,8 +3,10 @@ import { dbConnect } from "@/lib/mongodb";
 import "@/data/models/User";    
 import "@/data/models/Imovel";  
 import mongoose from "mongoose";
+import { verifyToken } from "@/middlewares/authJWT"; // Importa o middleware
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+
+async function handler(req: NextApiRequest, res: NextApiResponse) {
 
 
   if (req.method !== "GET") {
@@ -34,3 +36,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
 }
+
+export default verifyToken(handler);

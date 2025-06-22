@@ -22,6 +22,10 @@ export default function Buscador() {
   const [sortedImoveis, setSortedImoveis] = useState<Imovel[]>([]);
   const [currentPage, setCurrentPage] = useState(1); // Estado para a página atual
   const itemsPerPage = 15; // Número de imóveis por página
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentImoveis = sortedImoveis.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(sortedImoveis.length / itemsPerPage);
 
   const handleFiltro = (tipo: "valor" | "dataLeilao" | null) => {
   if (filter === tipo) {
@@ -92,13 +96,6 @@ export default function Buscador() {
     setSortedImoveis(imoveisParaOrdenar);
     setCurrentPage(1); // Reinicia para a primeira página ao alterar os filtros
   }, [fetchedImoveis, filter, crescente]);
-
-  // Calcular os imóveis para a página atual
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentImoveis = sortedImoveis.slice(startIndex, endIndex);
-
-  const totalPages = Math.ceil(sortedImoveis.length / itemsPerPage);
 
   return (
     <Template>
