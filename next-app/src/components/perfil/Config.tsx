@@ -2,15 +2,11 @@
 import { Button } from "@/components/Button";
 import Field from "@/components/login/Field";
 import { useAuth } from "@/context/AuthContext";
-import {
-  IconEye,
-  IconEyeClosed,
-  IconLock,
-  IconMail,
-} from "@tabler/icons-react";
+import {IconEye,IconEyeClosed,IconLock,IconMail,} from "@tabler/icons-react";
 import Image from "next/image";
 import { useState } from "react";
 import toast, {Toaster}from "react-hot-toast";
+import { parseCookies } from "nookies"; 
 
 export default function Config() {
   const { user } = useAuth();
@@ -33,10 +29,13 @@ export default function Config() {
 
   const handleSave = async () => {
     try {
+      const cookies = parseCookies(); // Recupera os cookies
+      const token = cookies['auth.token']; // Obtém o token dos cookies
       const response = await fetch("/api/auth/alterarInfo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
         },
         body: JSON.stringify({
           id: user?.id, // Certifique-se de que o ID do usuário está disponível

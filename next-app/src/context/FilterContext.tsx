@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { ReactNode } from "react";
 import { Imovel } from "@/data/models/Imovel";
 import estados from "@/data/constants/Estados";
+import { parseCookies } from "nookies";
 
 interface Filtros {
   estado: string | null;
@@ -49,10 +50,13 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
   // Função para buscar imóveis sem filtros do backend
   const imoveisSemFiltroApi = async () =>{
     try {
+      const cookies = parseCookies(); 
+      const token = cookies['auth.token']; 
       const response = await fetch("/api/imoveis", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
       if (!response.ok) {
@@ -69,10 +73,13 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
   // Função para buscar imóveis filtrados do backend
   const filtrarImoveisComFiltros = async (filtrosParaBuscar: Filtros): Promise<Imovel[]> => {
     try {
+      const cookies = parseCookies(); 
+      const token = cookies['auth.token']; 
       const response = await fetch("/api/imoveisfiltrados", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
         },
         body: JSON.stringify(filtrosParaBuscar),
       });
