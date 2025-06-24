@@ -157,6 +157,11 @@ def extrair_dados_imoveis(html):
                     card_data['vagas'] = txt
 
         imoveis.append(card_data)
+        
+        for imovel in imoveis:
+         for key, value in imovel.items():
+            if value is None:
+                imovel[key] = "Não informado"
 
     return imoveis
 
