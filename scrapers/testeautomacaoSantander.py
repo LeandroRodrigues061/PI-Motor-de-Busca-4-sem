@@ -160,6 +160,11 @@ def extrair_dados_imoveis(html):
         
         for imovel in imoveis:
          for key, value in imovel.items():
+            if key == "imagem":
+                continue
+            if key in ["valor_inicial", "valor_avaliacao", "valor_minimo_1_leilao", "valor_minimo_2_leilao"]:
+                if value is None:
+                    continue
             if value is None:
                 imovel[key] = "Não informado"
 

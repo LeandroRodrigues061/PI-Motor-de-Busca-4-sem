@@ -47,10 +47,12 @@ export default function ImovelCard({ imovel }: imovelProps) {
     }
   };
 
+  console.log(imovel.imagem)
+
   return (
     <div key={imovel._id} className="border border-zinc-300 p-6 rounded-xl bg-white justify-between items-center lg:items-start md:w-full lg:w-[700px] xl:w-[900px] 2xl:w-[1000px] flex flex-col lg:flex-row gap-6 relative">
       <div className="relative rounded-xl w-full h-72 lg:w-72 lg:h-52 overflow-hidden">
-        <Image src={imovel.imagem || "/img/search-house.png"} alt="imagem da casa" fill className="object-cover lg:object-contain " />
+        <Image src={imovel.imagem || "/img/search-house.png"} alt="imagem da casa" fill className="object-cover lg:object-contain" unoptimized />
         <button 
           onClick={toggleFavorite}
           className="lg:hidden absolute size-8 flex items-center justify-center bg-zinc-200 rounded-lg right-2 top-2 cursor-pointer">

@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 const nextConfig: NextConfig = {
   images:{
     remotePatterns:[
