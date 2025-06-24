@@ -6,6 +6,7 @@ import ImovelCard from "@/components/buscador/ImovelCard";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext"; 
 import { Imovel } from "@/data/models/Imovel";
+import { parseCookies } from "nookies"; 
 
 export default function Favorites() {
   const { setTipo, toggleSidebar } = useSidebar();
@@ -18,26 +19,44 @@ export default function Favorites() {
   const [busca, setBusca] = useState("");
   const [imoveisFavoritos, setImoveisFavoritos] = useState<Imovel[]>([]); 
 
+  const fetchFavoritos = async () => {
+    try {
+      const token = parseCookies()['auth.token']; // Recupera o token dos cookies
+
+      if (!token) {
+        throw new Error("Token não encontrado nos cookies.");
+      }
+      
+      if (!user || !user.id) { 
+        throw new Error("Usuário não encontrado ou inválido.");
+      }
+  
+      const response = await fetch(`/api/favoritos/buscarFavoritos?userId=${user.id}`, {
+        method: 'GET', // Mantido como GET
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Adicionado o cabeçalho Authorization
+        },
+      });
+  
+      if (!response.ok) {
+        return console.log(`Erro na API: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      setImoveisFavoritos(data.favoritos || []);
+    } catch (error) {
+      console.error("Erro ao buscar favoritos:", error);
+      setImoveisFavoritos([]);
+    }
+  };
+
   useEffect(() => {
     setTipo("user_config");
   }, [setTipo]); 
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user?.id) {
-      const fetchFavoritos = async () => {
-        try {
-          const response = await fetch(`/api/favoritos/buscarFavoritos?userId=${user.id}`);
-          if (!response.ok) {
-            return console.log(`Erro na API: ${response.status}`);
-          }
-          const data = await response.json();
-          setImoveisFavoritos(data.favoritos || []); 
-        } catch (error) {
-          console.error("Erro ao buscar favoritos:", error);
-          setImoveisFavoritos([]); 
-        }
-      };
-
       fetchFavoritos();
     } else if (!isLoading && !isAuthenticated) {
       setImoveisFavoritos([]);

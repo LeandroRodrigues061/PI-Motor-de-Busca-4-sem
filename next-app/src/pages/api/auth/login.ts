@@ -30,6 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       nome: user.nome,
       cargo: user.cargo,
     };
+  console.log(password)
+
+  console.log('Senha:', isPasswordValid); // Adicione um log para verificar o resultado
 
   if (!isPasswordValid) {
     return res.status(401).json({ message: 'Senha incorreta' });

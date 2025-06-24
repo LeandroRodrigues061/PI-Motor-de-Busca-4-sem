@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Button } from "../Button";
 import bancos from "@/data/constants/Bancos";
 import estados from "@/data/constants/Estados";
-import useWindowSize from "@/hooks/useWindowSize";
 import { useSidebar } from "@/context/SideBarContext";
 import { IconArrowLeft } from "@tabler/icons-react";
+import { parseCookies } from 'nookies';
 
 export default function SidebarFilters() {
   const {isOpenSidebar, toggleSidebar } = useSidebar()
@@ -23,10 +23,27 @@ export default function SidebarFilters() {
   const [bairrosDisponiveis, setBairrosDisponiveis] = useState<string[]>([]);
 
   const fetchBairros = async () => {
-    const response = await fetch("/api/bairros");
-    const data = await response.json();
-    // data.bairros é o array de bairros
-    setBairrosDisponiveis(data.bairros);
+    try {
+      const cookies = parseCookies();
+      const token = cookies['auth.token'];
+      if (!token) {
+        throw new Error("Token não encontrado na sessão.");
+      }
+      const response = await fetch("/api/bairros", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao buscar os bairros.");
+      }
+      setBairrosDisponiveis(data.bairros);
+    } catch (error) {
+      console.error("Erro ao buscar bairros:", error);
+    }
   };
 
   const toggleBairro = (bairro: string) => {
@@ -108,19 +125,19 @@ export default function SidebarFilters() {
 
         {/* Bairros */}
         {cidadeSelecionada && (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 h-48 overflow-y-auto">
             <h2 className="text-xl font-semibold text-zinc-900">Bairro</h2>
             {bairrosDisponiveis.map((bairro: string) => (
-              <label key={bairro} className="flex items-center gap-2">
+              <label key={bairro || ""} className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  value={bairro}
+                  value={bairro || "Bairro nao encontrado"} 
                   disabled={!estadoSelecionado}
-                  className={`border rounded-xl p-2 text-zinc-600" ${
+                  className={`border rounded-xl p-2 text-zinc-600 ${
                     !estadoSelecionado ? "cursor-no-drop " : ""
                   }`}
-                  checked={bairrosSelecionados.includes(bairro)}
-                  onChange={() => toggleBairro(bairro)}
+                  checked={bairrosSelecionados.includes(bairro || "")} 
+                  onChange={() => toggleBairro(bairro || "")} 
                 />
                 {bairro}
               </label>
@@ -136,10 +153,7 @@ export default function SidebarFilters() {
           <select
             value={tipoImovel}
             onChange={(e) => setTipoImovel(e.target.value)}
-            disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600" ${
-              !estadoSelecionado ? "cursor-no-drop " : ""
-            }`}
+            className={`border rounded-xl p-2 text-zinc-600 `}
           >
             <option value="indiferente">Indiferente</option>
             <option value="casa">Casa</option>
@@ -156,10 +170,7 @@ export default function SidebarFilters() {
           <select
             value={valor}
             onChange={(e) => setValor(e.target.value)}
-            disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600 text-sm ${
-              !estadoSelecionado ? "cursor-no-drop " : ""
-            }`}
+            className={`border rounded-xl p-2 text-zinc-600 text-sm`}
           >
             <option className="text-xl" value="">
               Não especificado
@@ -187,7 +198,6 @@ export default function SidebarFilters() {
             <input
               type="checkbox"
               value={banco.name}
-              disabled={!estadoSelecionado}
               checked={bancosSelecionados.includes(banco.name)}
               onChange={() => {
                 setBancosSelecionados((prev) =>
@@ -297,10 +307,7 @@ export default function SidebarFilters() {
           <select
             value={tipoImovel}
             onChange={(e) => setTipoImovel(e.target.value)}
-            disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600" ${
-              !estadoSelecionado ? "cursor-no-drop " : ""
-            }`}
+            className={`border rounded-xl p-2 text-zinc-600" `}
           >
             <option value="indiferente">Indiferente</option>
             <option value="casa">Casa</option>
@@ -317,10 +324,7 @@ export default function SidebarFilters() {
           <select
             value={valor}
             onChange={(e) => setValor(e.target.value)}
-            disabled={!estadoSelecionado}
-            className={`border rounded-xl p-2 text-zinc-600 text-sm ${
-              !estadoSelecionado ? "cursor-no-drop " : ""
-            }`}
+            className={`border rounded-xl p-2 text-zinc-600 text-sm `}
           >
             <option className="text-xl" value="">
               Não especificado
@@ -348,7 +352,6 @@ export default function SidebarFilters() {
             <input
               type="checkbox"
               value={banco.name}
-              disabled={!estadoSelecionado}
               checked={bancosSelecionados.includes(banco.name)}
               onChange={() => {
                 setBancosSelecionados((prev) =>

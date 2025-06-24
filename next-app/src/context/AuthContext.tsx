@@ -54,7 +54,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const fetchFavorites = async (userId: string) => {
     try {
-      const res = await fetch(`/api/favoritos/buscarFavoritos?userId=${userId}`);
+      const token = parseCookies()['auth.token']; 
+  
+      if (!token) {
+        throw new Error("Token não encontrado nos cookies.");
+      }
+  
+      const res = await fetch(`/api/favoritos/buscarFavoritos?userId=${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho Authorization
+        },
+      });
+  
       if (res.ok) {
         const data = await res.json();
         const favoritosString = data.favoritos.map((idObj: any) => {
@@ -104,7 +117,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const res = await fetch('/api/favoritos/adicionar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: 
+        { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${parseCookies()['auth.token']}`
+        },
         body: JSON.stringify({ imovelId, userId: user.id }),
       });
       if (res.ok) {
@@ -123,7 +140,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const res = await fetch('/api/favoritos/remover', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: 
+        { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${parseCookies()['auth.token']}`
+        },
         body: JSON.stringify({ imovelId, userId: user.id }),
       });
       if (res.ok) {

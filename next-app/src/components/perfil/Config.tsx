@@ -2,17 +2,11 @@
 import { Button } from "@/components/Button";
 import Field from "@/components/login/Field";
 import { useAuth } from "@/context/AuthContext";
-import {
-  IconArrowAutofitLeft,
-  IconArrowAutofitLeftFilled,
-  IconArrowLeft,
-  IconEye,
-  IconEyeClosed,
-  IconLock,
-  IconMail,
-} from "@tabler/icons-react";
+import {IconEye,IconEyeClosed,IconLock,IconMail,} from "@tabler/icons-react";
 import Image from "next/image";
 import { useState } from "react";
+import toast, {Toaster}from "react-hot-toast";
+import { parseCookies } from "nookies"; 
 
 export default function Config() {
   const { user } = useAuth();
@@ -33,8 +27,39 @@ export default function Config() {
     }
   };
 
+  const handleSave = async () => {
+    try {
+      const cookies = parseCookies(); // Recupera os cookies
+      const token = cookies['auth.token']; // Obtém o token dos cookies
+      const response = await fetch("/api/auth/alterarInfo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+        body: JSON.stringify({
+          id: user?.id, // Certifique-se de que o ID do usuário está disponível
+          nome,
+          cargo,
+          email,
+          senha: password,
+        }),
+      });
+      if (response.ok) {
+        toast.success("Informações atualizadas com sucesso!");
+      } else {
+        const errorData = await response.json();
+        toast.error(`Erro ao atualizar informações: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Erro ao salvar alterações:", error);
+      toast.error("Ocorreu um erro ao salvar as alterações.");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="flex gap-2 items-center">
         <div className="w-1 h-6 bg-primary rounded-lg" />
         <h1 className="text-3xl font-semibold text-zinc-900">
@@ -67,18 +92,17 @@ export default function Config() {
               <input
                 type="text"
                 placeholder={user?.nome}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setNome(e.target.value)}
                 value={nome}
                 className="outline-none text-zinc-500 w-full"
               />
             </Field>
-
             <Field title="Cargo">
               <IconMail className="text-zinc-400" />
               <input
-                type="email"
-                placeholder="Digite seu email"
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Digite seu cargo"
+                onChange={(e) => setCargo(e.target.value)}
                 value={cargo}
                 className="outline-none text-zinc-500 w-full"
               />
@@ -97,7 +121,7 @@ export default function Config() {
               <div className="flex flex-1 gap-1">
                 <IconLock className="text-zinc-400" />
                 <input
-                  type={type}
+                  type='password'
                   placeholder="Digite seu senha"
                   onChange={(e) => setPassword(e.target.value)}
                   value={password}
@@ -114,7 +138,7 @@ export default function Config() {
               </button>
             </Field>
           </div>
-          <Button variant="primary" className="">
+          <Button onClick={handleSave} variant="primary" className="">
             Salvar alterações
           </Button>
         </div>
