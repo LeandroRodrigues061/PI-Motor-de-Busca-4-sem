@@ -131,6 +131,16 @@ def extrair_dados():
             "parceiro": parceiro,
             "favorito": favorito
         })
+        
+    for imovel in dados:
+        for key, value in imovel.items():
+            if key == "imagem":
+                continue
+            if key in ["valor_inicial", "valor_avaliacao", "valor_minimo_1_leilao", "valor_minimo_2_leilao"]:
+                if value is None:
+                    continue
+            if value is None or value == "N/A":
+                imovel[key] = "Não informado"
 
     print(f"🔎 {len(dados)} imóveis extraídos.")
     return dados

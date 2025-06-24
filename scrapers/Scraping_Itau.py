@@ -108,6 +108,16 @@ try:
             "datas_leiloes": datas_leiloes,
             "favorito": False
         })
+    
+    for imovel in dados:
+        for key, value in imovel.items():
+            if key == "imagem":
+                continue
+            if key in ["valor_inicial", "valor_avaliacao", "valor_minimo_1_leilao", "valor_minimo_2_leilao"]:
+                if value is None:
+                    continue
+            if value is None or value == "N/A" or (isinstance(value, str) and value.strip() == ""):
+                imovel[key] = "Não informado"
 
     def salvar_em_mongodb(imoveis, nome_collection):
         imoveis = [d for d in imoveis if d.get("numero_imovel") not in (None, "", "N/A")]

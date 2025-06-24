@@ -1,8 +1,7 @@
-# Base com Python e suporte ao Chrome
 FROM python:3.11-slim
 
-# Atualiza pacotes e instala dependências do Chrome e Selenium
-RUN apt-get update && apt-get install -y \
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     unzip \
     curl \
@@ -21,18 +20,18 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Variável de ambiente para rodar Chrome no modo headless
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_BIN=/usr/bin/chromedriver
+ENV PYTHONUNBUFFERED=1
 
-# Diretório de trabalho
 WORKDIR /app
 
-# Copia o código
-COPY . /app
-
-# Instala dependências Python
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Comando padrão (pode trocar por run_all.py ou qualquer script)
+COPY . /app
+
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
 CMD ["python", "-u", "run_all.py"]

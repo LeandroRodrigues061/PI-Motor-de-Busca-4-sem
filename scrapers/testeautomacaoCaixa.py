@@ -148,6 +148,15 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     detalhes["banco"] = "CAIXA"
     
     detalhes["favorito"] = False
+    
+    for key, value in detalhes.items():
+        if key == "imagem":
+            continue
+        if key in ["valor_inicial", "valor_avaliacao", "valor_minimo_1_leilao", "valor_minimo_2_leilao"]:
+                if value is None:
+                    continue
+        if value is None:
+            detalhes[key] = "Não informado"
 
     return detalhes
 
