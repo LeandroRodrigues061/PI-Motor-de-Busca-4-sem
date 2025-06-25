@@ -21,7 +21,7 @@ services:
   next-app:
       build:
         context: ./next-app
-        dockerfile: Dockerfile
+        dockerfile: DockerFile
       depends_on: 
         mongo:
           condition: service_healthy 
