@@ -109,7 +109,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     destroyCookie(null, 'auth.token', { path: '/' });
     setUser(null);
     setFavorites([]);
-    router.push('/login');
+    router.push('/');
   };
 
   const addFavorite = async (imovelId: string) => {
