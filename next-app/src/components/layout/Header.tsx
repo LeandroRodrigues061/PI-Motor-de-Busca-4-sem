@@ -39,7 +39,7 @@ export default function Header() {
                 <IconUser size={20} />
                 <p>Perfil</p>
               </Link>
-              <Link href="#" onClick={signOut}
+              <Link href={"/"} onClick={signOut}
               className="flex gap-1 text-zinc-600 transition-colors duration-300 hover:text-red-500 items-center">
                 <IconLogout size={20} />
                 <p>Logout</p>
