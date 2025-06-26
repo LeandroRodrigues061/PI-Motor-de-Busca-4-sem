@@ -223,33 +223,33 @@ def coletar_lista_imoveis(driver):
 #             print("Erro ao coletar imóvel:", e)
 #     return lista
 
-def navegar_ate_imovel(driver, estado, cidade, pagina, indice):
-    wait = WebDriverWait(driver, 40)
-    driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
-    time.sleep(5)
-    Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text(estado)
-    time.sleep(1)
-    Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_cidade")))).select_by_visible_text(cidade)
-    time.sleep(1)
-    wait.until(EC.element_to_be_clickable((By.ID, "btn_next0"))).click()
-    time.sleep(1)
-    wait.until(EC.element_to_be_clickable((By.ID, "btn_next1"))).click()
-    time.sleep(2)
-    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
-    for _ in range(1, pagina):
-        paginacao = driver.find_element(By.ID, "paginacao")
-        links = paginacao.find_elements(By.TAG_NAME, "a")
-        proximo_link = None
-        for link in links:
-            if "carregaListaImoveis" in link.get_attribute("href"):
-                proximo_link = link
-                break
-        if proximo_link:
-            driver.execute_script("arguments[0].click();", proximo_link)
-            time.sleep(3)
-            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
-    imoveis_divs = driver.find_elements(By.CLASS_NAME, "group-block-item")
-    return imoveis_divs[indice]
+# def navegar_ate_imovel(driver, estado, cidade, pagina, indice):
+#     wait = WebDriverWait(driver, 40)
+#     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
+#     time.sleep(5)
+#     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text(estado)
+#     time.sleep(1)
+#     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_cidade")))).select_by_visible_text(cidade)
+#     time.sleep(1)
+#     wait.until(EC.element_to_be_clickable((By.ID, "btn_next0"))).click()
+#     time.sleep(1)
+#     wait.until(EC.element_to_be_clickable((By.ID, "btn_next1"))).click()
+#     time.sleep(2)
+#     wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
+#     for _ in range(1, pagina):
+#         paginacao = driver.find_element(By.ID, "paginacao")
+#         links = paginacao.find_elements(By.TAG_NAME, "a")
+#         proximo_link = None
+#         for link in links:
+#             if "carregaListaImoveis" in link.get_attribute("href"):
+#                 proximo_link = link
+#                 break
+#         if proximo_link:
+#             driver.execute_script("arguments[0].click();", proximo_link)
+#             time.sleep(3)
+#             wait.until(EC.presence_of_element_located((By.CLASS_NAME, "group-block-item")))
+#     imoveis_divs = driver.find_elements(By.CLASS_NAME, "group-block-item")
+#     return imoveis_divs[indice]
 
 def processar_todos_imoveis_por_link(driver, lista_imoveis):
     imoveis = []
@@ -301,10 +301,11 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
+    time.sleep(5)
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text("SP")
-    time.sleep(1)
+    time.sleep(5)
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_cidade")))).select_by_visible_text("SAO PAULO")
-    time.sleep(1)
+    time.sleep(5)
     wait.until(EC.visibility_of_element_located((By.ID, "btn_next0")))
     botao = driver.find_element(By.ID, "btn_next0")
     driver.execute_script("arguments[0].scrollIntoView(true);", botao)
