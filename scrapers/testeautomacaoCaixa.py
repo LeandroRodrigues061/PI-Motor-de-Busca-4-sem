@@ -224,8 +224,9 @@ def coletar_lista_imoveis(driver):
 #     return lista
 
 def navegar_ate_imovel(driver, estado, cidade, pagina, indice):
-    wait = WebDriverWait(driver, 20)
+    wait = WebDriverWait(driver, 40)
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
+    time.sleep(5)
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text(estado)
     time.sleep(1)
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_cidade")))).select_by_visible_text(cidade)
