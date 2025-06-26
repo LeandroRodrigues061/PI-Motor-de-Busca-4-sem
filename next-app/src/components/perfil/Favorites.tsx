@@ -40,7 +40,7 @@ export default function Favorites() {
       });
   
       if (!response.ok) {
-        return console.log(`Erro na API: ${response.status}`);
+         throw new Error()//return console.log(`Erro na API: ${response.status}`);
       }
   
       const data = await response.json();

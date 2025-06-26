@@ -85,7 +85,7 @@ export const FiltroProvider = ({ children }: { children: ReactNode }) => {
       });
       if (!response.ok) throw new Error("Erro ao buscar imóveis");
       const data = await response.json();
-      console.log("Recebido da API:", data);
+      //console.log("Recebido da API:", data);
       return data;
     } catch (error) {
       console.error("Erro ao buscar imóveis:", error);

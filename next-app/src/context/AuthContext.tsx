@@ -80,7 +80,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           return idObj.toString();
         });
         setFavorites(favoritosString);
-        console.log(favoritosString, "Favoritos atualizados com sucesso!");
+        //console.log(favoritosString, "Favoritos atualizados com sucesso!");
       } else {
         const errorData = await res.json();
         console.error("Erro ao buscar favoritos:", errorData.message);
@@ -109,7 +109,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     destroyCookie(null, 'auth.token', { path: '/' });
     setUser(null);
     setFavorites([]);
-    router.push('/');
   };
 
   const addFavorite = async (imovelId: string) => {
