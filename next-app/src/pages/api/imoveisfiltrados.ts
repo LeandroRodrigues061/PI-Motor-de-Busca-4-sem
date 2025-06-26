@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { dbConnect } from "@/lib/mongodb";
 import Imovel from "@/data/models/Imovel";
-import { verifyToken } from "@/middlewares/authJWT";
+import { verifyToken } from "@/middleware/authJWT";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
@@ -10,8 +10,17 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
       const { estado, cidade, bairro, tipoImovel, valor, banco } = req.body;
 
-      if(!estado && !cidade && (!bairro || bairro.length === 0) && !valor && !tipoImovel && (!banco || banco.length === 0)) {
-        return res.status(400).json({ message: "Pelo menos um filtro deve ser fornecido." });
+      if (
+        !estado &&
+        !cidade &&
+        (!bairro || bairro.length === 0) &&
+        !valor &&
+        !tipoImovel &&
+        (!banco || banco.length === 0)
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Pelo menos um filtro deve ser fornecido." });
       }
 
       const query: any = {};
@@ -21,7 +30,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       if (bairro && Array.isArray(bairro) && bairro.length > 0) {
         query.bairro = { $in: bairro };
       }
-      if (tipoImovel && tipoImovel !== "indiferente") query.tipo_imovel = tipoImovel;
+      if (tipoImovel && tipoImovel !== "indiferente")
+        query.tipo_imovel = tipoImovel;
 
       if (valor && typeof valor === "string") {
         if (valor.startsWith("<")) {
@@ -35,8 +45,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           query.$expr = {
             $and: [
               { $gte: [{ $toDouble: "$valor_avaliacao" }, min] },
-              { $lte: [{ $toDouble: "$valor_avaliacao" }, max] }
-            ]
+              { $lte: [{ $toDouble: "$valor_avaliacao" }, max] },
+            ],
           };
         }
       }
