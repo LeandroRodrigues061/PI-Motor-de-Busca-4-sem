@@ -1,8 +1,9 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { dbConnect } from '@/lib/mongodb';
-import User from '@/data/models/User';
+import type { NextApiRequest, NextApiResponse } from "next";
+import { dbConnect } from "@/lib/mongodb";
+import User from "@/data/models/User";
+import { verifyToken } from "@/middleware/authJWT";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Método não permitido" });
   }
@@ -33,9 +34,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     user.favoritos = user.favoritos.filter((id) => id.toString() !== imovelId);
     await user.save();
 
-    return res.status(200).json({ message: "Imóvel removido dos favoritos", favoritos: user.favoritos });
+    return res
+      .status(200)
+      .json({
+        message: "Imóvel removido dos favoritos",
+        favoritos: user.favoritos,
+      });
   } catch (error) {
     console.error("Erro ao remover favorito:", error);
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
 }
+
+export default verifyToken(handler);

@@ -115,12 +115,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const addFavorite = async (imovelId: string) => {
     if (!user) return;
     try {
+      const cookies = parseCookies(); // Recupera os cookies
+      const token = cookies['auth.token']; // Obtém o token dos cookies
       const res = await fetch('/api/favoritos/adicionar', {
         method: 'POST',
         headers: 
         { 
           'Content-Type': 'application/json', 
-          Authorization: `Bearer ${parseCookies()['auth.token']}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ imovelId, userId: user.id }),
       });
@@ -138,12 +140,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const removeFavorite = async (imovelId: string) => {
     if (!user) return;
     try {
+      const cookies = parseCookies(); // Recupera os cookies
+      const token = cookies['auth.token']; // Obtém o token dos cookies
       const res = await fetch('/api/favoritos/remover', {
         method: 'POST',
         headers: 
         { 
           'Content-Type': 'application/json', 
-          Authorization: `Bearer ${parseCookies()['auth.token']}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ imovelId, userId: user.id }),
       });

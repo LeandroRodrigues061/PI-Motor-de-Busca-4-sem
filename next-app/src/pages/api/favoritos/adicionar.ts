@@ -1,10 +1,10 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { dbConnect } from '@/lib/mongodb';
-import User from '@/data/models/User';
+import type { NextApiRequest, NextApiResponse } from "next";
+import { dbConnect } from "@/lib/mongodb";
+import User from "@/data/models/User";
+import { verifyToken } from "@/middleware/authJWT";
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method !== "POST"){
+async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
     return res.status(405).json({ message: "Método não permitido" });
   }
   dbConnect();
@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: "Dados inválidos" });
   }
 
-    try {
+  try {
     // Busca o usuário pelo ID
     const user = await User.findById(userId);
 
@@ -32,11 +32,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     user.favoritos.push(imovelId);
     await user.save();
 
-    return res.status(200).json({ message: "Imóvel adicionado aos favoritos", favoritos: user.favoritos });
+    return res
+      .status(200)
+      .json({
+        message: "Imóvel adicionado aos favoritos",
+        favoritos: user.favoritos,
+      });
   } catch (error) {
     console.error("Erro ao adicionar favorito:", error);
     return res.status(500).json({ message: "Erro interno do servidor" });
   }
-
-
 }
+export default verifyToken(handler);
