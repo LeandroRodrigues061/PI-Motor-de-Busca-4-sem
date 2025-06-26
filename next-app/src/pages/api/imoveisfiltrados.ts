@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { dbConnect } from "@/lib/mongodb";
 import Imovel from "@/data/models/Imovel";
+import { verifyToken } from "@/middlewares/authJWT";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
       await dbConnect();
@@ -43,8 +44,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (banco && banco.length > 0) {
         query.banco = { $in: banco };
       }
-      console.log("BODY:", req.body);
-      console.log("QUERY:", query);
+      //console.log("BODY:", req.body);
+      //console.log("QUERY:", query);
 
       const imoveis = await Imovel.find(query).exec();
       res.status(200).json(imoveis);
@@ -57,3 +58,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(405).json({ message: `Método ${req.method} não permitido` });
   }
 }
+
+export default verifyToken(handler);

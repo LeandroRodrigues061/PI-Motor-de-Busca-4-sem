@@ -1,15 +1,14 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { dbConnect } from "@/lib/mongodb";
 import User from "@/data/models/User";
+import { verifyToken } from "@/middlewares/authJWT";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: `Método ${req.method} não permitido.` });
   }
 
   const { id,nome, email, cargo, senha } = req.body;
-
-  console.log("ID recebido:", id);
 
   if (!id || !nome || !email || !cargo || !senha) {
     return res.status(400).json({ message: "Todos os campos são obrigatórios." });
@@ -38,3 +37,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ message: "Erro interno do servidor." });
   }
 }
+
+export default verifyToken(handler);
