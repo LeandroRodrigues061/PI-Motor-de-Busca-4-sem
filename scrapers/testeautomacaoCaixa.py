@@ -298,11 +298,12 @@ if __name__ == "__main__":
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+    options.add_argument('--proxy-server=https://200.174.198.86:8888')
+    
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
     time.sleep(5)
-    driver.save_screenshot("screenshot.png")
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text("SP")
     time.sleep(5)
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_cidade")))).select_by_visible_text("SAO PAULO")
