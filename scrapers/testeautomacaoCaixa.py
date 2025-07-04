@@ -290,6 +290,10 @@ def salvar_em_mongodb(imoveis, nome_collection):
             print(f"❌ Erro ao salvar imóvel {imovel['numero_imovel']}: {e}")
 
 
+BRIGHT_USERNAME = 'brd-customer-hl_3da95667-zone-datacenter_proxy1'
+BRIGHT_PASSWORD = '9tkyy9wey6i6'
+BRIGHT_PROXY = 'brd.superproxy.io:33335'
+
 if __name__ == "__main__":
     options = Options()
     options.add_argument('--headless')
@@ -298,7 +302,8 @@ if __name__ == "__main__":
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-    options.add_argument('--proxy-server=http://144.22.175.58:1080')
+    proxy_argument = f'--proxy-server=http://{BRIGHT_USERNAME}:{BRIGHT_PASSWORD}@{BRIGHT_PROXY}'
+    options.add_argument(proxy_argument)
     
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
