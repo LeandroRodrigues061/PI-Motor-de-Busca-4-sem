@@ -8,23 +8,12 @@ import time, unicodedata, re
 from bs4 import BeautifulSoup
 
 # Proxy BrightData
-BRIGHT_USERNAME = 'brd-auth-token'
-BRIGHT_PASSWORD = '69xxwEV9nMMA3BpEk2RHSZ2mfuaLCqYr'
+BRIGHT_USERNAME = 'brd-customer-hl_3da95667-zone-residential_proxy1-session-24000_0-debug-none'
+BRIGHT_PASSWORD = 'r3i1r5p8zviw'
 BRIGHT_IP = '77.37.41.87'
 BRIGHT_PORT = '24000'
 
-PROXY = f"http://{BRIGHT_USERNAME}:{BRIGHT_PASSWORD}@{BRIGHT_IP}:{BRIGHT_PORT}"
-
-# MongoDB Connection
-try:
-    client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
-    db = client["MotorDeBusca"]
-    client.server_info()
-    print("✅ Conectado ao MongoDB.")
-except errors.ServerSelectionTimeoutError as err:
-    print("❌ Erro ao conectar ao MongoDB:", err)
-    exit(1)
-
+PROXY = f"http://{BRIGHT_IP}:{BRIGHT_PORT}"
 def padronizar_bairro(bairro):
     if not bairro:
         return None
@@ -149,12 +138,13 @@ def salvar_em_mongodb(imoveis, nome_collection):
 
 if __name__ == "__main__":
     options = uc.ChromeOptions()
-    options.add_argument(f'--proxy-server={PROXY}')
+    options.add_argument(f'--proxy-server=http://127.0.0.1/:24000')
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-dev-shm-usage")
-
+    options.add_argument('--start-maximized')
+    
     driver = uc.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
 
@@ -172,6 +162,5 @@ if __name__ == "__main__":
     print(f"🔍 Total encontrados: {len(lista)}")
 
     imoveis = processar_todos_imoveis_por_link(driver, lista)
-    salvar_em_mongodb(imoveis, "imoveis")
 
     driver.quit()
