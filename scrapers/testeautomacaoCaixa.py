@@ -4,10 +4,71 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from pymongo import MongoClient, errors
-import time
-import unicodedata
-import re
+import time, unicodedata, re, zipfile, os
 from datetime import datetime
+
+BRIGHT_USERNAME = 'brd-customer-hl_3da95667-zone-datacenter_proxy1'
+BRIGHT_PASSWORD = '9tkyy9wey6i6'
+BRIGHT_PROXY = 'brd.superproxy.io'
+BRIGHT_PORT = '33335'
+
+def create_proxy_auth_extension(proxy_host, proxy_port, proxy_username, proxy_password, scheme='http', plugin_path='proxy_auth_plugin.zip'):
+    manifest_json = """
+    {
+        "version": "1.0.0",
+        "manifest_version": 2,
+        "name": "Chrome Proxy",
+        "permissions": [
+            "proxy",
+            "tabs",
+            "unlimitedStorage",
+            "storage",
+            "<all_urls>",
+            "webRequest",
+            "webRequestBlocking"
+        ],
+        "background": {
+            "scripts": ["background.js"]
+        }
+    }
+    """
+
+    background_js = f"""
+    var config = {{
+        mode: "fixed_servers",
+        rules: {{
+            singleProxy: {{
+                scheme: "{scheme}",
+                host: "{proxy_host}",
+                port: parseInt({proxy_port})
+            }},
+            bypassList: ["localhost"]
+        }}
+    }};
+    chrome.proxy.settings.set({{value: config, scope: "regular"}}, function() {{}});
+
+    chrome.webRequest.onAuthRequired.addListener(
+        function(details) {{
+            return {{
+                authCredentials: {{
+                    username: "{proxy_username}",
+                    password: "{proxy_password}"
+                }}
+            }};
+        }},
+        {{urls: ["<all_urls>"]}},
+        ['blocking']
+    );
+    """
+
+    with zipfile.ZipFile(plugin_path, 'w') as zp:
+        zp.writestr("manifest.json", manifest_json)
+        zp.writestr("background.js", background_js)
+
+    return plugin_path
+
+# Cria a extensão com autenticação
+plugin_path = create_proxy_auth_extension(BRIGHT_PROXY, BRIGHT_PORT, BRIGHT_USERNAME, BRIGHT_PASSWORD)
 
 try:
     client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
@@ -290,9 +351,6 @@ def salvar_em_mongodb(imoveis, nome_collection):
             print(f"❌ Erro ao salvar imóvel {imovel['numero_imovel']}: {e}")
 
 
-BRIGHT_USERNAME = 'brd-customer-hl_3da95667-zone-datacenter_proxy1'
-BRIGHT_PASSWORD = '9tkyy9wey6i6'
-BRIGHT_PROXY = 'brd.superproxy.io:33335'
 
 if __name__ == "__main__":
     options = Options()
@@ -302,13 +360,11 @@ if __name__ == "__main__":
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-    proxy_argument = f'--proxy-server=http://{BRIGHT_USERNAME}:{BRIGHT_PASSWORD}@{BRIGHT_PROXY}'
-    options.add_argument(proxy_argument)
+    options.add_extension(plugin_path)
     
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
-    driver.save_screenshot('screenshot.png')
     time.sleep(5)
     Select(wait.until(EC.presence_of_element_located((By.ID, "cmb_estado")))).select_by_visible_text("SP")
     time.sleep(5)
