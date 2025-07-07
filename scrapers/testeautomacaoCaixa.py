@@ -7,8 +7,8 @@ from pymongo import MongoClient, errors
 import time, unicodedata, re, zipfile, os
 from datetime import datetime
 
-BRIGHT_USERNAME = 'brd-customer-hl_3da95667-zone-datacenter_proxy1'
-BRIGHT_PASSWORD = '9tkyy9wey6i6'
+BRIGHT_USERNAME = 'brd-customer-hl_3da95667-zone-residential_proxy1'
+BRIGHT_PASSWORD = 'r3i1r5p8zviw'
 BRIGHT_PROXY = 'brd.superproxy.io'
 BRIGHT_PORT = '33335'
 
