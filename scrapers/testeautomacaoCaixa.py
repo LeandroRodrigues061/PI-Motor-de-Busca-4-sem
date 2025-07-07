@@ -138,7 +138,7 @@ def salvar_em_mongodb(imoveis, nome_collection):
 
 if __name__ == "__main__":
     options = uc.ChromeOptions()
-    options.add_argument(f'--proxy-server=http://127.0.0.1/:24000')
+    options.add_argument(f'--proxy-server=http://127.0.0.1:24000')
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-gpu")
