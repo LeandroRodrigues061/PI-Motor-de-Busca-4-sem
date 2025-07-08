@@ -1,7 +1,8 @@
-import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from pymongo import MongoClient, errors
 from datetime import datetime
 import time, unicodedata, re
@@ -137,15 +138,17 @@ def salvar_em_mongodb(imoveis, nome_collection):
             print(f"❌ Erro ao salvar {imovel['numero_imovel']}: {e}")
 
 if __name__ == "__main__":
-    options = uc.ChromeOptions()
+    options = Options()
     options.add_argument(f'--proxy-server=http://127.0.0.1:24000')
     options.add_argument("--window-size=1920,1080")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument('--start-maximized')
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument('--allow-insecure-localhost')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--headless')
     
-    driver = uc.Chrome(options=options)
+    driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
 
     driver.get('https://venda-imoveis.caixa.gov.br/sistema/busca-imovel.asp')
