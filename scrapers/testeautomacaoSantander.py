@@ -10,11 +10,13 @@ import re
 from datetime import datetime
 import unicodedata
 from datetime import datetime
+import os
 
 from pymongo import MongoClient
 
-client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin")
-db = client["MotorDeBusca"]
+mongo_uri = os.environ.get("MONGO_URI")
+client = MongoClient(mongo_uri)
+db = client["pi_motor"]  
 
 def get_text_safe(el):
     return el.get_text(strip=True) if el else None

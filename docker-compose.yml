@@ -1,44 +1,21 @@
 services:
-  mongo:
-    image: mongo:latest
-    container_name: mongo
-    restart: always
+  next-app:
+    build:
+      context: ./next-app
+      dockerfile: DockerFile
+    environment:
+      MONGO_URI: mongodb+srv://usuario:senha@clusterlastrearimoveis.xhmcrgi.mongodb.net/
     ports:
-      - "27018:27017"
+      - "3000:3000"
     networks:
       - app-network
-    volumes:
-      - mongo-data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s 
-      timeout: 5s   
-      retries: 5    
-      start_period: 30s 
-  next-app:
-      build:
-        context: ./next-app
-        dockerfile: DockerFile
-      depends_on: 
-        mongo:
-          condition: service_healthy 
-      environment:
-        MONGO_URI: mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin
-      ports:
-        - "3000:3000"
-      networks:
-        - app-network
-      command: npm start
+    command: npm start
 
   scrapers:
     build: ./scrapers
     container_name: scrapers
-    depends_on: 
-      mongo:
-        condition: service_healthy 
+    environment:
+      MONGO_URI: mongodb+srv://usuario:senha@clusterlastrearimoveis.xhmcrgi.mongodb.net/
     networks:
       - app-network
 
@@ -46,7 +23,3 @@ networks:
   app-network:
     name: pi-motor-de-busca-4-sem_app-network
     driver: bridge
-
-volumes:
-  mongo-data:
-    name: pi-motor-de-busca-4-sem_mongo-data

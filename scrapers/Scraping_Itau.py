@@ -7,10 +7,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 import time
 import tempfile
 from pymongo import MongoClient, errors
+import os
 
 try:
-    client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
-    db = client["MotorDeBusca"]
+    mongo_uri = os.environ.get("MONGO_URI")
+    client = MongoClient(mongo_uri)
+    db = client["pi_motor"]  
     client.server_info()
     print("✅ Conectado ao MongoDB com sucesso.")
 except errors.ServerSelectionTimeoutError as err:
@@ -30,7 +32,7 @@ options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
 driver = webdriver.Chrome(options=options)
 
 try:
-    driver.get("https://www.itau.com.br/imoveis-itau?estado=S%C3%83O+PAULO&cidade=SAO+PAULO")
+    driver.get("https://www.itau.com.br/imoveis-itau?estado=S%C3%83O+PAULO&cidade=S%C3%83O+PAULO")
     time.sleep(5)
 
     wait = WebDriverWait(driver, 30)
