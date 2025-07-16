@@ -7,6 +7,7 @@ from pymongo import MongoClient, errors
 from datetime import datetime
 import time, unicodedata, re
 from bs4 import BeautifulSoup
+import os
 
 # Proxy BrightData
 BRIGHT_USERNAME = 'brd-customer-hl_3da95667-zone-residential_proxy1-session-24000_0-debug-none'
@@ -129,6 +130,9 @@ def salvar_em_mongodb(imoveis, nome_collection):
     if not imoveis:
         print("⚠️ Nenhum dado para salvar no MongoDB.")
         return
+    mongo_uri = os.environ.get("MONGO_URI")
+    client = MongoClient(mongo_uri)
+    db = client["imoveis_db"]
     collection = db[nome_collection]
     collection.create_index("numero_imovel", unique=True, sparse=True)
     for imovel in imoveis:
@@ -167,3 +171,5 @@ if __name__ == "__main__":
     imoveis = processar_todos_imoveis_por_link(driver, lista)
 
     driver.quit()
+
+    salvar_em_mongodb(imoveis, "imoveis_caixa")

@@ -9,10 +9,12 @@ from time import sleep
 import tempfile
 from pymongo import MongoClient, errors
 import re
+import os
 
 try:
-    client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
-    db = client["MotorDeBusca"]
+    mongo_uri = os.environ.get("MONGO_URI")
+    client = MongoClient(mongo_uri)
+    db = client["pi_motor"]  
     client.server_info()
     print("✅ Conectado ao MongoDB.")
 except errors.ServerSelectionTimeoutError as err:
