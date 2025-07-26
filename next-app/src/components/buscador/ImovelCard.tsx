@@ -64,7 +64,8 @@ export default function ImovelCard({ imovel }: imovelProps) {
       <div className="flex flex-col gap-[7px] w-full">
       <div className="flex gap-1">
         <p className="text-zinc-600">Data do leilão:</p>
-        {imovel.datas_leiloes.map((data, index) => (
+        {Array.isArray(imovel.datas_leiloes) &&
+        imovel.datas_leiloes.map((data, index) => (
              <span key={index}  className="text-zinc-800 font-semibold">  
           {new Date(data).toLocaleDateString("pt-BR", {
           day: "2-digit",

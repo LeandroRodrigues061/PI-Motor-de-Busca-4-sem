@@ -55,22 +55,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const fetchFavorites = async (userId: string) => {
     try {
       const token = parseCookies()['auth.token']; 
-  
+
       if (!token) {
         throw new Error("Token não encontrado nos cookies.");
       }
-  
+
       const res = await fetch(`/api/favoritos/buscarFavoritos?userId=${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Adiciona o token no cabeçalho Authorization
+          Authorization: `Bearer ${token}`,
         },
       });
-  
+
       if (res.ok) {
         const data = await res.json();
-        const favoritosString = data.favoritos.map((idObj: any) => {
+        const favoritosString = (data.favoritos || []).map((idObj: any) => {
           if (idObj.toHexString) {
             return idObj.toHexString();
           }
@@ -80,12 +80,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
           return idObj.toString();
         });
         setFavorites(favoritosString);
-        //console.log(favoritosString, "Favoritos atualizados com sucesso!");
       } else {
+        setFavorites([]);
         const errorData = await res.json();
         console.error("Erro ao buscar favoritos:", errorData.message);
       }
     } catch (error) {
+      setFavorites([]);
       console.error("Erro ao buscar favoritos:", error);
     }
   };

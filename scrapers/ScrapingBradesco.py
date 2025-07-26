@@ -14,7 +14,7 @@ import os
 try:
     mongo_uri = os.environ.get("MONGO_URI")
     client = MongoClient(mongo_uri)
-    db = client["pi_motor"]  
+    db = client["MotorDeBusca"]  
     client.server_info()
     print("✅ Conectado ao MongoDB.")
 except errors.ServerSelectionTimeoutError as err:
