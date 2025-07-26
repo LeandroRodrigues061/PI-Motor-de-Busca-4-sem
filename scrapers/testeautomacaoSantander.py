@@ -16,7 +16,7 @@ from pymongo import MongoClient
 
 mongo_uri = os.environ.get("MONGO_URI")
 client = MongoClient(mongo_uri)
-db = client["pi_motor"]  
+db = client["MotorDeBusca"]  
 
 def get_text_safe(el):
     return el.get_text(strip=True) if el else None
