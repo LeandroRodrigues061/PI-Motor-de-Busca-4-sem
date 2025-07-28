@@ -10,8 +10,7 @@ from pymongo import MongoClient, errors
 import os
 
 try:
-    mongo_uri = os.environ.get("MONGO_URI")
-    client = MongoClient(mongo_uri)
+    client = MongoClient("mongodb+srv://usuario:senha@clusterlastrearimoveis.xhmcrgi.mongodb.net/")
     db = client["MotorDeBusca"]  
     client.server_info()
     print("✅ Conectado ao MongoDB com sucesso.")

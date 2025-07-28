@@ -8,9 +8,10 @@ import time
 import unicodedata
 import re
 from datetime import datetime
+import os
 
 try:
-    client = MongoClient("mongodb://root:example@mongo:27017/MotorDeBusca?authSource=admin", serverSelectionTimeoutMS=5000)
+    client = MongoClient("mongodb+srv://usuario:senha@clusterlastrearimoveis.xhmcrgi.mongodb.net/")
     db = client["MotorDeBusca"]
     client.server_info()
     print("✅ Conectado ao MongoDB.")
