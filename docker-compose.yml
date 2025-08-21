@@ -11,13 +11,13 @@ services:
       - app-network
     command: npm start
 
-  # scrapers:
-  #   build: ./scrapers
-  #   container_name: scrapers
-  #   environment:
-  #     MONGO_URI: mongodb+srv://usuario:senha@clusterlastrearimoveis.xhmcrgi.mongodb.net/
-  #   networks:
-  #     - app-network
+  scrapers:
+    build: ./scrapers
+    container_name: scrapers
+    environment:
+      MONGO_URI: mongodb+srv://usuario:senha@clusterlastrearimoveis.xhmcrgi.mongodb.net/
+    networks:
+      - app-network
 
 networks:
   app-network:
