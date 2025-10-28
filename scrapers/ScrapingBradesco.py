@@ -126,7 +126,7 @@ def extrair_dados():
             "datas_leiloes": data_leilao,
             "endereco": endereco_leilao,
             "valor_inicial": valor_inicial,
-            "banco": "Bradesco",
+            "site": "Bradesco",
             "link": link,
             "uf": "SP",
             "cidade": "SAO PAULO",

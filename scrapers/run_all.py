@@ -4,7 +4,8 @@ scripts = [
     'ScrapingBradesco.py',
     'testeautomacaoSantander.py' ,
     'Scraping_Itau.py',
-    'testeautomacaoCaixa.py',
+    'megaLeiloes.py',
+    # 'testeautomacaoCaixa.py',
 ]
 
 for script in scripts:

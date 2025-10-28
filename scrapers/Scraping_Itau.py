@@ -102,7 +102,7 @@ try:
             "cidade": "SAO PAULO",
             "uf": "SP",
             "link": link_imovel,
-            "banco": "Itau",
+            "site": "Itau",
             "imagem": imagem.strip(),
             "endereco": endereco.strip(),
             "valor_inicial": valor_inicial,
