@@ -82,6 +82,7 @@ def extrair_detalhes_imovel(driver, numero_imovel):
     detalhes["link"] = f"https://venda-imoveis.caixa.gov.br/sistema/detalhe-imovel.asp?hdnimovel={numero_imovel}"
     detalhes["imagem"] = f"https://venda-imoveis.caixa.gov.br/fotos/F{numero_imovel}21.jpg"    
     detalhes["site"] = "CAIXA"
+    detalhes["imagem"] = f"https://venda-imoveis.caixa.gov.br/fotos/F{numero_imovel}21.jpg"
     detalhes["favorito"] = False
 
     return detalhes
